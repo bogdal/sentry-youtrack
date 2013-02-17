@@ -34,7 +34,7 @@ setup(
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'Operating System :: OS Independent',
-        'Topic :: Software Development'
+        'Topic :: Software Development',
         'Programming Language :: Python',
         'License :: OSI Approved :: BSD License',
     ],

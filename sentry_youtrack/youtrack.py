@@ -1,7 +1,7 @@
 import requests
 import urllib
+import json
 from BeautifulSoup import BeautifulStoneSoup
-# from sentry.utils.cache import cache
 
 
 class YouTrackClient(object):
@@ -57,13 +57,6 @@ class YouTrackClient(object):
 
     def create_issue(self, data):
         url = self.url + self.CREATE_URL
-        data = {
-            'project': data.get('project'),
-            'summary': data.get('summary'),
-            'description': data.get('description'),
-            'priority': data.get('priority'),
-            'type': data.get('type'),
-        }
         response = requests.post(url, cookies=self.cookies, data=data)
         response.raise_for_status()
         soap = BeautifulStoneSoup(response.text)

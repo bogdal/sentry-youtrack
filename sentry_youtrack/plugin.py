@@ -3,9 +3,11 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from sentry.plugins.bases.issue import IssuePlugin
+from sentry.utils.cache import cache
 from requests.exceptions import HTTPError, MissingSchema
 from sentry_youtrack.youtrack import YouTrackClient
 from sentry_youtrack import VERSION
+from hashlib import md5
 
 
 class YouTrackIssueForm(forms.Form):
@@ -115,11 +117,26 @@ class YoutrackConfigurationForm(forms.Form):
         return data
 
 
+def cache_this(timeout=60):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            def get_cache_key(*args, **kwargs):
+                params = list(args) + kwargs.values()
+                return md5("".join(map(str, params))).hexdigest()
+            key = get_cache_key(func.__name__, *args, **kwargs)
+            result = cache.get(key)
+            if not result:
+                result = func(*args, **kwargs)
+                cache.set(key, result, timeout)
+            return result
+        return wrapper
+    return decorator
+
+
 class YouTrackPlugin(IssuePlugin):
     author = u"Adam Bogdał"
     author_url = "https://github.com/bogdal/sentry-youtrack"
     version = VERSION
-    description = "Itegrate Youtrack issues by linking a repository to a project."
     slug = "youtrack"
     title = _("YouTrack")
     conf_title = title
@@ -133,9 +150,7 @@ class YouTrackPlugin(IssuePlugin):
     ]
     
     def is_configured(self, request, project, **kwargs):
-        if not self.get_option('project', project):
-            return False
-        return True
+        return bool(self.get_option('project', project))
 
     def get_youtrack_client(self, project):
         settings = {
@@ -145,14 +160,15 @@ class YouTrackPlugin(IssuePlugin):
         }
         return YouTrackClient(**settings)
 
+    @cache_this(60)
     def get_form_choices(self, project):
         yt_client = self.get_youtrack_client(project)
-
         choices_func = lambda x: (x, x)
-        choices = {}
 
-        choices["priority"] = map(choices_func, yt_client.get_priorities())
-        choices["type"] = map(choices_func, yt_client.get_issue_types())
+        choices = {
+            "priority": map(choices_func, yt_client.get_priorities()),
+            "type": map(choices_func, yt_client.get_issue_types()),
+        }
 
         return choices
 
@@ -165,7 +181,6 @@ class YouTrackPlugin(IssuePlugin):
             'type': self.get_option('default_type', group.project),
             'form_choices': self.get_form_choices(group.project)
         }
-
         return initial
 
     def get_new_issue_title(self):
