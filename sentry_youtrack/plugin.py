@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from sentry.plugins.bases.issue import IssuePlugin
 from sentry.utils.cache import cache
-from requests.exceptions import HTTPError, MissingSchema
+from requests.exceptions import HTTPError, ConnectionError
 from sentry_youtrack.youtrack import YouTrackClient
 from sentry_youtrack import VERSION
 from hashlib import md5
@@ -17,14 +17,15 @@ class YouTrackIssueForm(forms.Form):
         widget=forms.TextInput(attrs={'class': 'span6'})
     )
     description = forms.CharField(
+        label=_("Description"),
         widget=forms.Textarea(attrs={"class": 'span6'})
     )
     priority = forms.ChoiceField(
-        label="Issue Priority",
+        label=_("Issue Priority"),
         required=True
     )
     type = forms.ChoiceField(
-        label="Issue Type",
+        label=_("Issue Type"),
         required=True
     )
 
@@ -46,19 +47,20 @@ class YouTrackIssueForm(forms.Form):
 
     
 class YoutrackConfigurationForm(forms.Form):
-    url = forms.CharField(
+    url = forms.URLField(
         label=_("YouTrack Instance URL"),
-        widget=forms.TextInput(attrs={'class': 'span6', 'placeholder': 'e.g. "https://youtrack.myjetbrains.com/"'}),
+        widget=forms.TextInput(attrs={'class': 'span9', 'placeholder': 'e.g. "https://youtrack.myjetbrains.com/"'}),
         required=True
     )
     username = forms.CharField(
         label=_("Username"),
-        widget=forms.TextInput(attrs={'class': 'span6'}),
+        widget=forms.TextInput(attrs={'class': 'span9'}),
         required=True
     )
     password = forms.CharField(
         label=_("Password"),
-        widget=forms.PasswordInput(attrs={'class': 'span6'}),
+        help_text=_("Only enter a password only if you want to change it"),
+        widget=forms.PasswordInput(attrs={'class': 'span9'}),
         required=False
     )
     project = forms.ChoiceField(
@@ -66,11 +68,11 @@ class YoutrackConfigurationForm(forms.Form):
         required=True
     )
     default_type = forms.ChoiceField(
-        label="Default Issue Type",
+        label=_("Default Issue Type"),
         required=False
     )
     default_priority = forms.ChoiceField(
-        label="Default Issue Priority",
+        label=_("Default Issue Priority"),
         required=False
     )
 
@@ -82,15 +84,18 @@ class YoutrackConfigurationForm(forms.Form):
         if initial:
             yt_client = self.get_youtrack_client(initial)
 
-            projects = []
+            projects = [(' ', u"- Choose project -")]
             for project in yt_client.get_projects():
                 projects.append((project['shortname'], u"%s (%s)" % (project['name'], project['shortname'])))
+            self.fields["project"].choices = projects
 
             choices = lambda x: (x, x)
-
-            self.fields["project"].choices = projects
             self.fields["default_priority"].choices = map(choices, yt_client.get_priorities())
             self.fields["default_type"].choices = map(choices, yt_client.get_issue_types())
+
+            if not any(args) and not initial.get('project'):
+                self.second_step_msg = u"%s %s" % (_("Your credentials are valid but plugin is NOT active yet."),
+                                                   _("Please fill in remaining required fields."))
         else:
             del self.fields["project"]
             del self.fields["default_priority"]
@@ -104,15 +109,32 @@ class YoutrackConfigurationForm(forms.Form):
         }
         return YouTrackClient(**yt_settings)
 
+    def clean_password(self):
+        password = self.cleaned_data.get('password') or self.initial.get('password')
+
+        if not password:
+            raise ValidationError(_("This field is required."))
+
+        return password
+
+    def clean_project(self):
+        project = self.cleaned_data.get('project').strip()
+
+        if not project:
+            raise ValidationError(_("This field is required."))
+
+        return project
+
     def clean(self):
         data = self.cleaned_data
 
+        if not all(data.get(field) for field in ('url', 'username', 'password')):
+            raise ValidationError(_('Missing required fields'))
+
         try:
             self.get_youtrack_client(data)
-        except HTTPError as e:
-            raise ValidationError("Unable to connect to YouTrack: %s" % e)
-        except MissingSchema:
-            raise ValidationError("Unable to connect to YouTrack")
+        except (HTTPError, ConnectionError) as e:
+            raise ValidationError(u"%s %s" % (_("Unable to connect to YouTrack."), e))
 
         return data
 
@@ -143,10 +165,11 @@ class YouTrackPlugin(IssuePlugin):
     conf_key = slug
     new_issue_form = YouTrackIssueForm
     project_conf_form = YoutrackConfigurationForm
+    project_conf_template = "sentry_youtrack/project_conf_form.html"
 
     resource_links = [
-        ("Bug Tracker", "https://github.com/bogdal/sentry-youtrack/issues"),
-        ("Source", "http://github.com/bogdal/sentry-youtrack"),
+        (_("Bug Tracker"), "https://github.com/bogdal/sentry-youtrack/issues"),
+        (_("Source"), "http://github.com/bogdal/sentry-youtrack"),
     ]
     
     def is_configured(self, request, project, **kwargs):

@@ -1,0 +1,27 @@
+{% load i18n crispy_forms_filters %}
+
+<form class="form-horizontal" action="" method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+    </div>
+</form>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+
+        var msg = "{{ form.second_step_msg }}";
+
+        var content = $("<p>").html(msg);
+        var msg_box = $("<div>")
+                .addClass("alert")
+                .addClass("alert-block")
+                .addClass("alert-info")
+                .append(content);
+
+        if(msg) {
+            $("#messages").html(msg_box);
+        }
+    });
+</script>

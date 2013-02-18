@@ -1,6 +1,5 @@
 import requests
 import urllib
-import json
 from BeautifulSoup import BeautifulStoneSoup
 
 
