@@ -14,7 +14,7 @@ setup(
     author='Adam Bogdal',
     author_email='adam@bogdal.pl',
     url='http://github.com/bogdal/sentry-youtrack',
-    description='A Sentry plugin which creates Youtrack issues from sentry events.',
+    description='A Sentry extension which integrates with YouTrack',
     long_description=open('README.rst').read(),
     license='BSD',
     packages=find_packages(),
