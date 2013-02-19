@@ -1,0 +1,33 @@
+{% extends "sentry/groups/details.html" %}
+
+{% load i18n crispy_forms_filters %}
+
+{% block title %}{{ title }} | {{ block.super }}{% endblock %}
+
+{% block inner %}
+<div class="span12">
+    <div class="page-header">
+        <h3>{{ title }}</h3>
+    </div>
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-block alert-error">
+        <ul>
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+
+    <form class="form-horizontal" action="" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}" />
+        {{ form|crispy }}
+        <p class="actions">
+            <button type="submit" class="btn btn-primary">{% trans "Create issue" %}</button>
+        </p>
+    </form>
+</div>
+{% endblock %}

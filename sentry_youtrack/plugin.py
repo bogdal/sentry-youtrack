@@ -13,19 +13,19 @@ from hashlib import md5
 class YouTrackIssueForm(forms.Form):
     project = forms.CharField(widget=forms.HiddenInput())
     summary = forms.CharField(
-        label=_("Issue Summary"),
-        widget=forms.TextInput(attrs={'class': 'span6'})
+        label=_("Summary"),
+        widget=forms.TextInput(attrs={'class': 'span9'})
     )
     description = forms.CharField(
         label=_("Description"),
-        widget=forms.Textarea(attrs={"class": 'span6'})
-    )
-    priority = forms.ChoiceField(
-        label=_("Issue Priority"),
-        required=True
+        widget=forms.Textarea(attrs={"class": 'span9'})
     )
     type = forms.ChoiceField(
         label=_("Issue Type"),
+        required=True
+    )
+    priority = forms.ChoiceField(
+        label=_("Issue Priority"),
         required=True
     )
 
@@ -164,6 +164,7 @@ class YouTrackPlugin(IssuePlugin):
     conf_title = title
     conf_key = slug
     new_issue_form = YouTrackIssueForm
+    create_issue_template = "sentry_youtrack/create_issue_form.html"
     project_conf_form = YoutrackConfigurationForm
     project_conf_template = "sentry_youtrack/project_conf_form.html"
 
@@ -216,4 +217,4 @@ class YouTrackPlugin(IssuePlugin):
 
     def get_issue_url(self, group, issue_id, **kwargs):
         url = self.get_option('url', group.project)
-        return "%s/issue/%s" % (url, issue_id)
+        return "%sissue/%s" % (url, issue_id)
