@@ -1,5 +1,4 @@
 import requests
-import urllib
 from BeautifulSoup import BeautifulStoneSoup
 
 
@@ -11,31 +10,52 @@ class YouTrackClient(object):
     CREATE_URL = '/rest/issue'
     CUSTOM_FIELD_VALUES = '/rest/admin/customfield/<param_name>/<param_value>'
 
-    def __init__(self, url, username, password):
+    API_KEY_COOKIE_NAME = 'jetbrains.charisma.main.security.PRINCIPAL'
+
+    def __init__(self, url, username=None, password=None, api_key=None):
         self.url = url.rstrip('/') if url else ''
-        self._login(username, password)
+        if api_key is None:
+            self._login(username, password)
+        else:
+            self.cookies = {self.API_KEY_COOKIE_NAME: api_key}
+            self.api_key = api_key
 
     def _login(self, username, password):
+        credentials = {
+            'login': username,
+            'password': password
+        }
         url = self.url + self.LOGIN_URL
-        response = requests.post(url +
-                                 "?login=" + urllib.quote_plus(username) +
-                                 "&password=" + urllib.quote_plus(password))
-        response.raise_for_status()
-        self.cookies = response.cookies
+        self._request(url, data=credentials, method='post')
+        self.cookies = self.response.cookies
+        self.api_key = self.cookies.get(self.API_KEY_COOKIE_NAME)
 
-    def _request(self, url):
-        response = requests.get(url, cookies=self.cookies)
-        response.raise_for_status()
-        return BeautifulStoneSoup(response.text)
+    def _request(self, url, data=None, method='get'):
+        if method not in ['get', 'post']:
+            raise AttributeError("Invalid method %s" % method)
+
+        kwargs = {
+            'url': url,
+            'data': data,
+        }
+        if hasattr(self, 'cookies'):
+            kwargs['cookies'] = self.cookies
+
+        if method == 'get':
+            self.response = requests.get(**kwargs)
+        elif method == 'post':
+            self.response = requests.post(**kwargs)
+        self.response.raise_for_status()
+        return BeautifulStoneSoup(self.response.text)
 
     def get_project_name(self, project_id):
         url = self.url + self.PROJECT_URL.replace('<project_id>', project_id)
-        soap = self._request(url)
+        soap = self._request(url, method='get')
         return soap.project['name']
 
     def get_projects(self):
         url = self.url + self.PROJECTS_URL
-        soap = self._request(url)
+        soap = self._request(url, method='get')
         return soap.projects
 
     def get_priorities(self):
@@ -56,7 +76,5 @@ class YouTrackClient(object):
 
     def create_issue(self, data):
         url = self.url + self.CREATE_URL
-        response = requests.post(url, cookies=self.cookies, data=data)
-        response.raise_for_status()
-        soap = BeautifulStoneSoup(response.text)
+        soap = self._request(url, data=data, method='post')
         return soap.issue

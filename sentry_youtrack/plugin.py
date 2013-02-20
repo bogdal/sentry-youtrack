@@ -59,7 +59,7 @@ class YoutrackConfigurationForm(forms.Form):
     )
     password = forms.CharField(
         label=_("Password"),
-        help_text=_("Only enter a password only if you want to change it"),
+        help_text=_("Only enter a password if you want to change it"),
         widget=forms.PasswordInput(attrs={'class': 'span9'}),
         required=False
     )
