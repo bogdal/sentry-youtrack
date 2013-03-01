@@ -8,6 +8,7 @@ class YouTrackClient(object):
     PROJECT_URL = '/rest/admin/project/<project_id>'
     PROJECTS_URL = '/rest/project/all'
     CREATE_URL = '/rest/issue'
+    COMMAND_URL = '/rest/issue/<issue>/execute'
     CUSTOM_FIELD_VALUES = '/rest/admin/customfield/<param_name>/<param_value>'
 
     API_KEY_COOKIE_NAME = 'jetbrains.charisma.main.security.PRINCIPAL'
@@ -78,3 +79,13 @@ class YouTrackClient(object):
         url = self.url + self.CREATE_URL
         soap = self._request(url, data=data, method='post')
         return soap.issue
+
+    def execute_command(self, issue, command):
+        url = self.url + self.COMMAND_URL.replace('<issue>', issue)
+        data = {'command': command}
+        self._request(url, data=data, method='post')
+
+    def add_tags(self, issue, tags):
+        for tag in tags:
+            cmd = u'add tag %s' % tag
+            self.execute_command(issue, cmd)
