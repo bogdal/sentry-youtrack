@@ -28,6 +28,11 @@ class YouTrackIssueForm(forms.Form):
         label=_("Issue Priority"),
         required=True
     )
+    tags = forms.CharField(
+        label=_("Tags"),
+        widget=forms.TextInput(attrs={'class': 'span6', 'placeholder': "e.g. sentry"}),
+        required=False
+    )
 
     def __init__(self, *args, **kwargs):
         super(YouTrackIssueForm, self).__init__(*args, **kwargs)
@@ -45,7 +50,7 @@ class YouTrackIssueForm(forms.Form):
 
         return description
 
-    
+
 class YoutrackConfigurationForm(forms.Form):
     url = forms.URLField(
         label=_("YouTrack Instance URL"),
@@ -75,6 +80,11 @@ class YoutrackConfigurationForm(forms.Form):
         label=_("Default Issue Priority"),
         required=False
     )
+    default_tags = forms.CharField(
+        label=_("Default Tags"),
+        widget=forms.TextInput(attrs={'class': 'span6', 'placeholder': "e.g. sentry"}),
+        required=False
+    )
 
     def __init__(self, *args, **kwargs):
         super(YoutrackConfigurationForm, self).__init__(*args, **kwargs)
@@ -100,6 +110,7 @@ class YoutrackConfigurationForm(forms.Form):
             del self.fields["project"]
             del self.fields["default_priority"]
             del self.fields["default_type"]
+            del self.fields["default_tags"]
 
     def get_youtrack_client(self, data):
         yt_settings = {
@@ -203,6 +214,7 @@ class YouTrackPlugin(IssuePlugin):
             'description': self._get_group_description(request, group, event),
             'priority': self.get_option('default_priority', group.project),
             'type': self.get_option('default_type', group.project),
+            'tags': self.get_option('default_tags', group.project),
             'form_choices': self.get_form_choices(group.project)
         }
         return initial
@@ -211,9 +223,15 @@ class YouTrackPlugin(IssuePlugin):
         return _("Create YouTrack Issue")
 
     def create_issue(self, request, group, form_data, **kwargs):
+        tags = form_data['tags'].split(',')
+
         yt_client = self.get_youtrack_client(group.project)
-        issue = yt_client.create_issue(form_data)
-        return issue['id']
+        issue_id = yt_client.create_issue(form_data)['id']
+
+        if tags:
+            yt_client.add_tags(issue_id, tags)
+
+        return issue_id
 
     def get_issue_url(self, group, issue_id, **kwargs):
         url = self.get_option('url', group.project)

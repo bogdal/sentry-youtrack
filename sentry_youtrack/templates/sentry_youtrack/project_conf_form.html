@@ -23,5 +23,10 @@
         if(msg) {
             $("#messages").html(msg_box);
         }
+
+        $("#id_youtrack-default_tags").select2({
+            tags:[],
+            minimumInputLength: 2
+        });
     });
 </script>
