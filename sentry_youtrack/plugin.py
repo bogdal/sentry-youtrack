@@ -59,6 +59,7 @@ class YoutrackConfigurationForm(forms.Form):
     )
     username = forms.CharField(
         label=_("Username"),
+        help_text=_("User should have admin rights."),
         widget=forms.TextInput(attrs={'class': 'span9'}),
         required=True
     )
@@ -89,23 +90,29 @@ class YoutrackConfigurationForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(YoutrackConfigurationForm, self).__init__(*args, **kwargs)
 
+        client = None
         initial = kwargs.get("initial")
 
         if initial:
-            yt_client = self.get_youtrack_client(initial)
+            client = self.get_youtrack_client(initial)
+            if not client and not args[0]:
+                self.full_clean()
+                self._errors['username'] = [self.youtrack_client_error]
 
+        if initial and client:
             projects = [(' ', u"- Choose project -")]
-            for project in yt_client.get_projects():
+            for project in client.get_projects():
                 projects.append((project['shortname'], u"%s (%s)" % (project['name'], project['shortname'])))
             self.fields["project"].choices = projects
 
             choices = lambda x: (x, x)
-            self.fields["default_priority"].choices = map(choices, yt_client.get_priorities())
-            self.fields["default_type"].choices = map(choices, yt_client.get_issue_types())
+            self.fields["default_priority"].choices = map(choices, client.get_priorities())
+            self.fields["default_type"].choices = map(choices, client.get_issue_types())
 
             if not any(args) and not initial.get('project'):
                 self.second_step_msg = u"%s %s" % (_("Your credentials are valid but plugin is NOT active yet."),
                                                    _("Please fill in remaining required fields."))
+
         else:
             del self.fields["project"]
             del self.fields["default_priority"]
@@ -118,7 +125,22 @@ class YoutrackConfigurationForm(forms.Form):
             'username': data.get('username'),
             'password': data.get('password'),
         }
-        return YouTrackClient(**yt_settings)
+
+        client = None
+
+        try:
+            client = YouTrackClient(**yt_settings)
+        except (HTTPError, ConnectionError) as e:
+            self.youtrack_client_error = u"%s %s" % (_("Unable to connect to YouTrack."), e)
+        else:
+            try:
+                client.get_user(yt_settings.get('username'))
+            except HTTPError as e:
+                if e.response.status_code == 403:
+                    self.youtrack_client_error = _("User doesn't have Low-level Administration permissions.")
+                    client = None
+
+        return client
 
     def clean_password(self):
         password = self.cleaned_data.get('password') or self.initial.get('password')
@@ -142,10 +164,10 @@ class YoutrackConfigurationForm(forms.Form):
         if not all(data.get(field) for field in ('url', 'username', 'password')):
             raise ValidationError(_('Missing required fields'))
 
-        try:
-            self.get_youtrack_client(data)
-        except (HTTPError, ConnectionError) as e:
-            raise ValidationError(u"%s %s" % (_("Unable to connect to YouTrack."), e))
+        client = self.get_youtrack_client(data)
+        if not client:
+            self._errors['username'] = self.error_class([self.youtrack_client_error])
+            del data['username']
 
         return data
 
