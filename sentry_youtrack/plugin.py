@@ -14,15 +14,15 @@ from hashlib import md5
 
 class YouTrackIssueForm(forms.Form):
     project = forms.CharField(widget=forms.HiddenInput())
-    summary = forms.CharField(
-        label=_("Summary"),
+    title = forms.CharField(
+        label=_("Title"),
         widget=forms.TextInput(attrs={'class': 'span9'})
     )
     description = forms.CharField(
         label=_("Description"),
         widget=forms.Textarea(attrs={"class": 'span9'})
     )
-    type = forms.ChoiceField(
+    issue_type = forms.ChoiceField(
         label=_("Issue Type"),
         required=True
     )
@@ -44,7 +44,7 @@ class YouTrackIssueForm(forms.Form):
         form_choices = initial.get('form_choices')
 
         self.fields["priority"].choices = form_choices['priority']
-        self.fields["type"].choices = form_choices['type']
+        self.fields["issue_type"].choices = form_choices['issue_type']
 
     def clean_description(self):
         description = self.cleaned_data.get('description')
@@ -249,7 +249,7 @@ class YouTrackPlugin(IssuePlugin):
 
         choices = {
             "priority": map(choices_func, yt_client.get_priorities()),
-            "type": map(choices_func, yt_client.get_issue_types()),
+            "issue_type": map(choices_func, yt_client.get_issue_types()),
         }
 
         return choices
@@ -257,10 +257,10 @@ class YouTrackPlugin(IssuePlugin):
     def get_initial_form_data(self, request, group, event, **kwargs):
         initial = {
             'project': self.get_option('project', group.project),
-            'summary': self._get_group_title(request, group, event),
+            'title': self._get_group_title(request, group, event),
             'description': self._get_group_description(request, group, event),
             'priority': self.get_option('default_priority', group.project),
-            'type': self.get_option('default_type', group.project),
+            'issue_type': self.get_option('default_type', group.project),
             'tags': self.get_option('default_tags', group.project),
             'form_choices': self.get_form_choices(group.project)
         }
@@ -270,10 +270,17 @@ class YouTrackPlugin(IssuePlugin):
         return _("Create YouTrack Issue")
 
     def create_issue(self, request, group, form_data, **kwargs):
-        tags = map(lambda x: x.strip(), form_data['tags'].split(','))
+        tags = filter(None, map(lambda x: x.strip(), form_data['tags'].split(',')))
 
         yt_client = self.get_youtrack_client(group.project)
-        issue_id = yt_client.create_issue(form_data)['id']
+        issue_data = {
+            'project': form_data.get('project'),
+            'summary': form_data.get('title'),
+            'description': form_data.get('description'),
+            'type': form_data.get('issue_type'),
+            'priority': form_data.get('priority'),
+        }
+        issue_id = yt_client.create_issue(issue_data)['id']
 
         if tags:
             yt_client.add_tags(issue_id, tags)
