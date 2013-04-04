@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Fieldset
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
@@ -30,6 +32,7 @@ class YouTrackIssueForm(forms.Form):
     )
     tags = forms.CharField(
         label=_("Tags"),
+        help_text=_("Comma-separated list of tags"),
         widget=forms.TextInput(attrs={'class': 'span6', 'placeholder': "e.g. sentry"}),
         required=False
     )
@@ -74,15 +77,16 @@ class YoutrackConfigurationForm(forms.Form):
         required=True
     )
     default_type = forms.ChoiceField(
-        label=_("Default Issue Type"),
+        label=_("Issue Type"),
         required=False
     )
     default_priority = forms.ChoiceField(
-        label=_("Default Issue Priority"),
+        label=_("Issue Priority"),
         required=False
     )
     default_tags = forms.CharField(
-        label=_("Default Tags"),
+        label=_("Tags"),
+        help_text=_("Comma-separated list of tags"),
         widget=forms.TextInput(attrs={'class': 'span6', 'placeholder': "e.g. sentry"}),
         required=False
     )
@@ -99,7 +103,24 @@ class YoutrackConfigurationForm(forms.Form):
                 self.full_clean()
                 self._errors['username'] = [self.youtrack_client_error]
 
+        fieldsets = [
+            Fieldset(
+                None,
+                'url',
+                'username',
+                'password',
+                'project',
+            )
+        ]
+
         if initial and client:
+            fieldsets.append(
+                Fieldset(
+                    _("Default values"),
+                    'default_type',
+                    'default_priority',
+                    'default_tags')
+            )
             projects = [(' ', u"- Choose project -")]
             for project in client.get_projects():
                 projects.append((project['shortname'], u"%s (%s)" % (project['name'], project['shortname'])))
@@ -118,6 +139,10 @@ class YoutrackConfigurationForm(forms.Form):
             del self.fields["default_priority"]
             del self.fields["default_type"]
             del self.fields["default_tags"]
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(*fieldsets)
 
     def get_youtrack_client(self, data):
         yt_settings = {
@@ -245,7 +270,7 @@ class YouTrackPlugin(IssuePlugin):
         return _("Create YouTrack Issue")
 
     def create_issue(self, request, group, form_data, **kwargs):
-        tags = form_data['tags'].split(',')
+        tags = map(lambda x: x.strip(), form_data['tags'].split(','))
 
         yt_client = self.get_youtrack_client(group.project)
         issue_id = yt_client.create_issue(form_data)['id']

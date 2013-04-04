@@ -1,8 +1,7 @@
-{% load i18n crispy_forms_filters %}
+{% load i18n crispy_forms_tags %}
 
 <form class="form-horizontal" action="" method="post">
-    {% csrf_token %}
-    {{ form|crispy }}
+    {% crispy form %}
     <div class="form-actions">
         <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
     </div>
@@ -23,10 +22,5 @@
         if(msg) {
             $("#messages").html(msg_box);
         }
-
-        $("#id_youtrack-default_tags").select2({
-            tags:[],
-            minimumInputLength: 2
-        });
     });
 </script>
