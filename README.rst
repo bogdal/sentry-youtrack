@@ -1,7 +1,11 @@
 sentry-youtrack
 ===============
 
-A Sentry plugin which creates Youtrack issues from sentry events.
+.. image:: https://version-image.appspot.com/pypi/?name=sentry-youtrack
+    :target: https://pypi.python.org/pypi/sentry-youtrack
+
+
+A Sentry plugin which creates YouTrack issues from sentry events.
 
 Install
 -------
