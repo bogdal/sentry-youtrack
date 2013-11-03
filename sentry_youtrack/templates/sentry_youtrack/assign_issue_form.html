@@ -7,7 +7,7 @@
     <script>
     $(function(){
         function format(state) {
-            return "<b>" + state.id +"</b> " + state.summary
+            return "<b>" + state.id +"</b> " + state.summary + " (" + state.state + ")"
         }
         $("#id_issue").select2({
             minimumInputLength: 0,
@@ -24,8 +24,7 @@
                     };
                 },
                 results: function (data, page) {
-                    var more = (page * 15) < data.total;
-                    return {results: data.issues, more: more};
+                    return {results: data.issues, more: data.more};
                 }
             },
             formatResult: format,

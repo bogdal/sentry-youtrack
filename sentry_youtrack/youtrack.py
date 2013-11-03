@@ -92,9 +92,9 @@ class YouTrackClient(object):
         response = requests.get(url, cookies=self.cookies)
         return BeautifulStoneSoup(response.text)
 
-    def get_project_issues(self, project_id, limit=100):
+    def get_project_issues(self, project_id, query=None, offset=0, limit=15):
         url = self.url + self.ISSUES_URL.replace('<project_id>', project_id)
-        params = {'max': limit}
+        params = {'max': limit, 'after': offset, 'filter': query}
         soap = self._request(url, method='get', params=params)
         return soap.issues
 

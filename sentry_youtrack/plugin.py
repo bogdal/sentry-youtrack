@@ -357,13 +357,7 @@ class YouTrackPlugin(IssuePlugin):
 
     def project_issues_view(self, request, group):
         project_issues = []
-        query = request.POST.get('q').lower()
-
-        @cache_this(60)
-        def get_issues():
-            yt_client = self.get_youtrack_client(group.project)
-            project_id = self.get_option('project', group.project)
-            return yt_client.get_project_issues(project_id)
+        query = request.POST.get('q')
 
         def get_int(value, default=0):
             try:
@@ -371,29 +365,25 @@ class YouTrackPlugin(IssuePlugin):
             except ValueError:
                 return default
 
-        issues = get_issues()
-        for issue in issues:
-            timestamp = issue.find("field", {'name': 'created'}).text
-            created = datetime.fromtimestamp(float(timestamp) / 1e3)
-            data = {
-                'id': issue['id'],
-                'state': issue.find("field", {'name': 'State'}).text,
-                'summary': issue.find("field", {'name': 'summary'}).text,
-                'created': created.strftime("%Y-%m-%d %H:%M")}
-
-            matching = any(query in field.lower() for field in
-                           [data['id'], data['summary']])
-            if not query or (query and matching):
-                project_issues.append(data)
-
         page = get_int(request.POST.get('page'), 1)
         page_limit = get_int(request.POST.get('page_limit'), 15)
-
-        project_issues.reverse()
-
         offset = (page-1) * page_limit
+
+        yt_client = self.get_youtrack_client(group.project)
+        project_id = self.get_option('project', group.project)
+        issues = yt_client.get_project_issues(project_id,
+                                              offset=offset,
+                                              limit=page_limit + 1,
+                                              query=query or None)
+
+        for issue in issues:
+            project_issues.append({
+                'id': issue['id'],
+                'state': issue.find("field", {'name': 'State'}).text,
+                'summary': issue.find("field", {'name': 'summary'}).text})
+
         data = {
-            'total': len(issues),
-            'issues': project_issues[offset:offset + page_limit]
+            'more': len(issues) > page_limit,
+            'issues': project_issues[:page_limit]
         }
         return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder))
