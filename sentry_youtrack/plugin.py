@@ -357,7 +357,6 @@ class YouTrackPlugin(IssuePlugin):
 
     def project_issues_view(self, request, group):
         project_issues = []
-        page_limit = request.POST.get('page_limit', 10)
         query = request.POST.get('q').lower()
 
         @cache_this(60)
@@ -366,7 +365,14 @@ class YouTrackPlugin(IssuePlugin):
             project_id = self.get_option('project', group.project)
             return yt_client.get_project_issues(project_id)
 
-        for issue in get_issues():
+        def get_int(value, default=0):
+            try:
+                return int(value)
+            except ValueError:
+                return default
+
+        issues = get_issues()
+        for issue in issues:
             timestamp = issue.find("field", {'name': 'created'}).text
             created = datetime.fromtimestamp(float(timestamp) / 1e3)
             data = {
@@ -380,6 +386,14 @@ class YouTrackPlugin(IssuePlugin):
             if not query or (query and matching):
                 project_issues.append(data)
 
+        page = get_int(request.POST.get('page'), 1)
+        page_limit = get_int(request.POST.get('page_limit'), 15)
+
         project_issues.reverse()
-        return HttpResponse(json.dumps(project_issues[:int(page_limit)],
-                                       cls=DjangoJSONEncoder))
+
+        offset = (page-1) * page_limit
+        data = {
+            'total': len(issues),
+            'issues': project_issues[offset:offset + page_limit]
+        }
+        return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder))
