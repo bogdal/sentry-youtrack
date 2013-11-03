@@ -1,18 +1,26 @@
 # -*- encoding: utf-8 -*-
+from datetime import datetime
+from hashlib import md5
+import json
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
+from sentry.models import GroupMeta, Activity
 from sentry.plugins.bases.issue import IssuePlugin
 from sentry.utils.cache import cache
 from requests.exceptions import HTTPError, ConnectionError
+
 from sentry_youtrack.youtrack import YouTrackClient
 from sentry_youtrack import VERSION
-from hashlib import md5
 
 
-class YouTrackIssueForm(forms.Form):
+class YouTrackNewIssueForm(forms.Form):
     project = forms.CharField(widget=forms.HiddenInput())
     title = forms.CharField(
         label=_("Title"),
@@ -38,7 +46,7 @@ class YouTrackIssueForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        super(YouTrackIssueForm, self).__init__(*args, **kwargs)
+        super(YouTrackNewIssueForm, self).__init__(*args, **kwargs)
 
         initial = kwargs.get('initial')
         form_choices = initial.get('form_choices')
@@ -52,6 +60,14 @@ class YouTrackIssueForm(forms.Form):
         description = description.replace('```', '{quote}')
 
         return description
+
+
+class YouTrackAssignIssueForm(forms.Form):
+
+    issue = forms.CharField(
+        label=_("YouTrack Issue"),
+        widget=forms.TextInput(attrs={'class': 'span6',
+                                      'placeholder': _("Choose issue")}))
 
 
 class YoutrackConfigurationForm(forms.Form):
@@ -221,8 +237,10 @@ class YouTrackPlugin(IssuePlugin):
     title = _("YouTrack")
     conf_title = title
     conf_key = slug
-    new_issue_form = YouTrackIssueForm
+    new_issue_form = YouTrackNewIssueForm
+    assign_issue_form = YouTrackAssignIssueForm
     create_issue_template = "sentry_youtrack/create_issue_form.html"
+    assign_issue_template = "sentry_youtrack/assign_issue_form.html"
     project_conf_form = YoutrackConfigurationForm
     project_conf_template = "sentry_youtrack/project_conf_form.html"
 
@@ -269,6 +287,9 @@ class YouTrackPlugin(IssuePlugin):
     def get_new_issue_title(self):
         return _("Create YouTrack Issue")
 
+    def get_existing_issue_title(self):
+        return _("Assign existing YouTrack issue")
+
     def create_issue(self, request, group, form_data, **kwargs):
         tags = filter(None, map(lambda x: x.strip(), form_data['tags'].split(',')))
 
@@ -290,3 +311,75 @@ class YouTrackPlugin(IssuePlugin):
     def get_issue_url(self, group, issue_id, **kwargs):
         url = self.get_option('url', group.project)
         return "%sissue/%s" % (url, issue_id)
+
+    def get_view_response(self, request, group):
+        if request.is_ajax():
+            return self.view(request, group)
+        return super(YouTrackPlugin, self).get_view_response(request, group)
+
+    def actions(self, request, group, action_list, **kwargs):
+        action_list = (super(YouTrackPlugin, self)
+                       .actions(request, group, action_list, **kwargs))
+
+        prefix = self.get_conf_key()
+        if not GroupMeta.objects.get_value(group, '%s:tid' % prefix, None):
+            url = self.get_url(group) + "?action=assign_issue"
+            action_list.append((self.get_existing_issue_title(), url))
+        return action_list
+
+    def view(self, request, group, **kwargs):
+        def get_action_view():
+            action_view = "%s_view" % request.GET.get('action')
+            if request.GET.get('action') and hasattr(self, action_view):
+                return getattr(self, action_view)
+
+        view = get_action_view() or super(YouTrackPlugin, self).view
+        return view(request, group, **kwargs)
+
+    def assign_issue_view(self, request, group):
+        form = self.assign_issue_form(request.POST or None)
+
+        if form.is_valid():
+            issue_id = form.cleaned_data['issue']
+            prefix = self.get_conf_key()
+            GroupMeta.objects.set_value(group, '%s:tid' % prefix, issue_id)
+
+            return self.redirect(reverse('sentry-group',
+                                         args=[group.team.slug,
+                                               group.project_id,
+                                               group.pk]))
+
+        context = {
+            'form': form,
+            'title': self.get_existing_issue_title(),
+        }
+        return self.render(self.assign_issue_template, context)
+
+    def project_issues_view(self, request, group):
+        project_issues = []
+        page_limit = request.POST.get('page_limit', 10)
+        query = request.POST.get('q').lower()
+
+        @cache_this(60)
+        def get_issues():
+            yt_client = self.get_youtrack_client(group.project)
+            project_id = self.get_option('project', group.project)
+            return yt_client.get_project_issues(project_id)
+
+        for issue in get_issues():
+            timestamp = issue.find("field", {'name': 'created'}).text
+            created = datetime.fromtimestamp(float(timestamp) / 1e3)
+            data = {
+                'id': issue['id'],
+                'state': issue.find("field", {'name': 'State'}).text,
+                'summary': issue.find("field", {'name': 'summary'}).text,
+                'created': created.strftime("%Y-%m-%d %H:%M")}
+
+            matching = any(query in field.lower() for field in
+                           [data['id'], data['summary']])
+            if not query or (query and matching):
+                project_issues.append(data)
+
+        project_issues.reverse()
+        return HttpResponse(json.dumps(project_issues[:int(page_limit)],
+                                       cls=DjangoJSONEncoder))

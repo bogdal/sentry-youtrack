@@ -12,6 +12,7 @@ class YouTrackClient(object):
     PROJECT_URL = '/rest/admin/project/<project_id>'
     PROJECTS_URL = '/rest/project/all'
     CREATE_URL = '/rest/issue'
+    ISSUES_URL = '/rest/issue/byproject/<project_id>'
     COMMAND_URL = '/rest/issue/<issue>/execute'
     CUSTOM_FIELD_VALUES = '/rest/admin/customfield/<param_name>/<param_value>'
     USER_URL = '/rest/admin/user/<user>'
@@ -36,13 +37,14 @@ class YouTrackClient(object):
         self.cookies = self.response.cookies
         self.api_key = self.cookies.get(self.API_KEY_COOKIE_NAME)
 
-    def _request(self, url, data=None, method='get'):
+    def _request(self, url, data=None, params=None, method='get'):
         if method not in ['get', 'post']:
             raise AttributeError("Invalid method %s" % method)
 
         kwargs = {
             'url': url,
             'data': data,
+            'params': params
         }
         if hasattr(self, 'cookies'):
             kwargs['cookies'] = self.cookies
@@ -89,6 +91,12 @@ class YouTrackClient(object):
 
         response = requests.get(url, cookies=self.cookies)
         return BeautifulStoneSoup(response.text)
+
+    def get_project_issues(self, project_id, limit=100):
+        url = self.url + self.ISSUES_URL.replace('<project_id>', project_id)
+        params = {'max': limit}
+        soap = self._request(url, method='get', params=params)
+        return soap.issues
 
     def create_issue(self, data):
         url = self.url + self.CREATE_URL

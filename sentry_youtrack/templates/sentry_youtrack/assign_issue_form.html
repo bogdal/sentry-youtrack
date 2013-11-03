@@ -1,0 +1,38 @@
+{% extends "sentry_youtrack/create_issue_form.html" %}
+{% load i18n %}
+
+{% block inner %}
+    {{ block.super }}
+
+    <script>
+    $(function(){
+        function format(state) {
+            return "<b>" + state.id +"</b> " + state.summary
+        }
+        $("#id_issue").select2({
+            minimumInputLength: 0,
+            ajax: {
+                url: "?action=project_issues",
+                quietMillis: 100,
+                type: 'post',
+                dataType: 'json',
+                data: function (term, page) {
+                    return {
+                        q: term,
+                        page_limit: 15
+                    };
+                },
+                results: function (data, page) {
+                    return {results: data};
+                }
+            },
+            formatResult: format,
+            formatSelection: format
+        });
+    });
+    </script>
+{% endblock %}
+
+{% block submit_button %}
+    <button type="submit" class="btn btn-primary">{% trans "Assign issue" %}</button>
+{% endblock %}
