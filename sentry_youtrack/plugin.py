@@ -21,7 +21,7 @@ from sentry_youtrack import VERSION
 
 
 class YouTrackNewIssueForm(forms.Form):
-    project = forms.CharField(widget=forms.HiddenInput())
+
     title = forms.CharField(
         label=_("Title"),
         widget=forms.TextInput(attrs={'class': 'span9'})
@@ -71,6 +71,7 @@ class YouTrackAssignIssueForm(forms.Form):
 
 
 class YoutrackConfigurationForm(forms.Form):
+
     url = forms.URLField(
         label=_("YouTrack Instance URL"),
         widget=forms.TextInput(attrs={'class': 'span9', 'placeholder': 'e.g. "https://youtrack.myjetbrains.com/"'}),
@@ -274,7 +275,6 @@ class YouTrackPlugin(IssuePlugin):
 
     def get_initial_form_data(self, request, group, event, **kwargs):
         initial = {
-            'project': self.get_option('project', group.project),
             'title': self._get_group_title(request, group, event),
             'description': self._get_group_description(request, group, event),
             'priority': self.get_option('default_priority', group.project),
@@ -295,7 +295,7 @@ class YouTrackPlugin(IssuePlugin):
 
         yt_client = self.get_youtrack_client(group.project)
         issue_data = {
-            'project': form_data.get('project'),
+            'project': self.get_option('project', group.project),
             'summary': form_data.get('title'),
             'description': form_data.get('description'),
             'type': form_data.get('issue_type'),
