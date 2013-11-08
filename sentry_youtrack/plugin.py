@@ -22,6 +22,13 @@ from sentry_youtrack import VERSION
 
 class YouTrackNewIssueForm(forms.Form):
 
+    field_type_mapping = {
+        'float': forms.FloatField,
+        'integer': forms.IntegerField,
+        'date': forms.DateField,
+        'string': forms.CharField,
+    }
+
     title = forms.CharField(
         label=_("Title"),
         widget=forms.TextInput(attrs={'class': 'span9'})
@@ -29,14 +36,6 @@ class YouTrackNewIssueForm(forms.Form):
     description = forms.CharField(
         label=_("Description"),
         widget=forms.Textarea(attrs={"class": 'span9'})
-    )
-    issue_type = forms.ChoiceField(
-        label=_("Issue Type"),
-        required=True
-    )
-    priority = forms.ChoiceField(
-        label=_("Issue Priority"),
-        required=True
     )
     tags = forms.CharField(
         label=_("Tags"),
@@ -49,10 +48,31 @@ class YouTrackNewIssueForm(forms.Form):
         super(YouTrackNewIssueForm, self).__init__(*args, **kwargs)
 
         initial = kwargs.get('initial')
-        form_choices = initial.get('form_choices')
+        project_fields = initial.get('project_fields')
 
-        self.fields["priority"].choices = form_choices['priority']
-        self.fields["issue_type"].choices = form_choices['issue_type']
+        for index, field in enumerate(project_fields, 1):
+            form_field = self._get_form_field(field)
+            if form_field:
+                self.fields['field_%s' % index] = form_field
+
+    def _get_form_field(self, project_field):
+        field_type = project_field['type']
+        field_values = project_field['values']
+        form_field = self.field_type_mapping.get(field_type)
+        kwargs = {
+            'label': project_field['name'],
+            'required': False
+        }
+        if form_field:
+            return form_field(**kwargs)
+        if field_values:
+            choices = zip(field_values, field_values)
+            if "[*]" in field_type:
+                return forms.MultipleChoiceField(
+                    widget=forms.CheckboxSelectMultiple,
+                    choices=choices, **kwargs)
+            kwargs['choices'] = [('', '-----')] + choices
+            return forms.ChoiceField(**kwargs)
 
     def clean_description(self):
         description = self.cleaned_data.get('description')
@@ -262,16 +282,9 @@ class YouTrackPlugin(IssuePlugin):
         return YouTrackClient(**settings)
 
     @cache_this(60)
-    def get_form_choices(self, project):
+    def get_project_fields(self, project):
         yt_client = self.get_youtrack_client(project)
-        choices_func = lambda x: (x, x)
-
-        choices = {
-            "priority": map(choices_func, yt_client.get_priorities()),
-            "issue_type": map(choices_func, yt_client.get_issue_types()),
-        }
-
-        return choices
+        return yt_client.get_project_fields(self.get_option('project', project))
 
     def get_initial_form_data(self, request, group, event, **kwargs):
         initial = {
@@ -280,7 +293,7 @@ class YouTrackPlugin(IssuePlugin):
             'priority': self.get_option('default_priority', group.project),
             'issue_type': self.get_option('default_type', group.project),
             'tags': self.get_option('default_tags', group.project),
-            'form_choices': self.get_form_choices(group.project)
+            'project_fields': self.get_project_fields(group.project),
         }
         return initial
 

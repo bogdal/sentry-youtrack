@@ -60,7 +60,15 @@ class YouTrackClient(object):
     def _get_bundle(self, soap, bundle='enumeration'):
         if soap.find('error'):
             raise YouTrackError(soap.find('error').string)
+
+        bundle_method = '_get_%s_values' % bundle
+        if hasattr(self, bundle_method):
+            return getattr(self, bundle_method)(soap)
+
         return [item.text for item in getattr(soap, bundle)]
+
+    def _get_userbundle_values(self, soap):
+        return [item['login'] for item in soap.userbundle]
 
     def get_project_name(self, project_id):
         url = self.url + self.PROJECT_URL.replace('<project_id>', project_id)
