@@ -121,11 +121,14 @@ class YouTrackClient(object):
             cmd = u'add tag %s' % tag
             self.execute_command(issue, cmd)
 
-    def get_project_fields(self, project_id):
+    def get_project_fields_list(self, project_id):
         url = self.url + self.PROJECT_FIELDS.replace('<project_id>', project_id)
         soap = self._request(url, method='get')
+        return soap.projectcustomfieldrefs
+
+    def get_project_fields(self, project_id):
         return [self._get_custom_project_field_details(field)
-                for field in soap.projectcustomfieldrefs]
+                for field in self.get_project_fields_list(project_id)]
 
     def _get_custom_project_field_details(self, field):
         field_data = self._request(field['url'], method='get')

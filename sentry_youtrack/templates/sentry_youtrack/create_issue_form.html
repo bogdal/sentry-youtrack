@@ -25,6 +25,7 @@
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next }}" />
         {{ form|crispy }}
+        <div id="project-fields"></div>
         <p class="actions">
             {% block submit_button %}
                 <button type="submit" class="btn btn-primary">{% trans "Create issue" %}</button>
@@ -32,4 +33,19 @@
         </p>
     </form>
 </div>
+
+{% block js %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $.ajax({
+                'url': "?action=project_fields",
+                beforeSend: function( xhr ) {
+                    $("#project-fields").html("loading..");
+                }
+            }).done(function(data){
+                $("#project-fields").html(data);
+            });
+        });
+    </script>
+{% endblock %}
 {% endblock %}
