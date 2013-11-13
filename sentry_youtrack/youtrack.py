@@ -126,9 +126,12 @@ class YouTrackClient(object):
         soap = self._request(url, method='get')
         return soap.projectcustomfieldrefs
 
-    def get_project_fields(self, project_id):
-        return [self._get_custom_project_field_details(field)
-                for field in self.get_project_fields_list(project_id)]
+    def get_project_fields(self, project_id, ignore_fields=[]):
+        fields = []
+        for field in self.get_project_fields_list(project_id):
+            if not field['name'] in ignore_fields:
+                fields.append(self._get_custom_project_field_details(field))
+        return fields
 
     def _get_custom_project_field_details(self, field):
         field_data = self._request(field['url'], method='get')

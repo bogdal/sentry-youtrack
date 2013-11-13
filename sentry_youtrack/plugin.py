@@ -30,22 +30,31 @@ class YouTrackProjectForm(forms.Form):
         'string': forms.CharField,
     }
 
-    def __init__(self, project_fields=None, ignore_fields=None,
-                 *args, **kwargs):
+    project_field_names = {}
+
+    def __init__(self, project_fields=None, *args, **kwargs):
         super(YouTrackProjectForm, self).__init__(*args, **kwargs)
         if not project_fields is None:
-            self.add_project_fields(project_fields, ignore_fields)
+            self.add_project_fields(project_fields)
 
-    def add_project_fields(self, project_fields, ignore_fields=None):
+    def add_project_fields(self, project_fields):
         fields = []
         for field in project_fields:
             form_field = self._get_form_field(field)
-            if form_field and not field['name'] in ignore_fields:
+            if form_field:
                 index = len(fields) + 1
                 field_name = '%s%s' % (self.PROJECT_FIELD_PREFIX, index)
                 self.fields[field_name] = form_field
                 fields.append(form_field)
+                self.project_field_names[field_name] = field['name']
         return fields
+
+    def get_project_field_values(self):
+        self.full_clean()
+        values = {}
+        for form_field_name, name in self.project_field_names.iteritems():
+            values[name] = self.cleaned_data.get(form_field_name)
+        return values
 
     def _get_form_field(self, project_field):
         field_type = project_field['type']
@@ -67,7 +76,7 @@ class YouTrackProjectForm(forms.Form):
             return forms.ChoiceField(**kwargs)
 
 
-class YouTrackNewIssueForm(forms.Form):
+class YouTrackNewIssueForm(YouTrackProjectForm):
 
     title = forms.CharField(
         label=_("Title"),
@@ -273,7 +282,6 @@ class YouTrackPlugin(IssuePlugin):
     project_conf_form = YoutrackConfigurationForm
     project_conf_template = "sentry_youtrack/project_conf_form.html"
     project_fields_form = YouTrackProjectForm
-    project_fields_template = "sentry_youtrack/project_fields_form.html"
 
     resource_links = [
         (_("Bug Tracker"), "https://github.com/bogdal/sentry-youtrack/issues"),
@@ -291,10 +299,15 @@ class YouTrackPlugin(IssuePlugin):
         }
         return YouTrackClient(**settings)
 
-    @cache_this(60)
     def get_project_fields(self, project):
-        yt_client = self.get_youtrack_client(project)
-        return yt_client.get_project_fields(self.get_option('project', project))
+
+        @cache_this(600)
+        def cached_fields(ignore_fields):
+            yt_client = self.get_youtrack_client(project)
+            return yt_client.get_project_fields(
+                self.get_option('project', project), ignore_fields)
+
+        return cached_fields(self.get_option('ignore_fields', project))
 
     def get_initial_form_data(self, request, group, event, **kwargs):
         initial = {
@@ -310,7 +323,21 @@ class YouTrackPlugin(IssuePlugin):
     def get_existing_issue_title(self):
         return _("Assign existing YouTrack issue")
 
+    def get_new_issue_form(self, request, group, event, **kwargs):
+        if request.POST or request.GET.get('form'):
+            project_fields = self.get_project_fields(group.project)
+            return self.new_issue_form(project_fields,
+                                       data=request.POST or None,
+                                       initial=self.get_initial_form_data(
+                                           request, group, event))
+        return forms.Form()
+
     def create_issue(self, request, group, form_data, **kwargs):
+
+        project_fields = self.get_project_fields(group.project)
+        project_form = self.project_fields_form(project_fields, request.POST)
+        project_field_values = project_form.get_project_field_values()
+
         tags = filter(None, map(lambda x: x.strip(),
                                 form_data['tags'].split(',')))
 
@@ -319,10 +346,15 @@ class YouTrackPlugin(IssuePlugin):
             'project': self.get_option('project', group.project),
             'summary': form_data.get('title'),
             'description': form_data.get('description'),
-            'type': form_data.get('issue_type'),
-            'priority': form_data.get('priority'),
         }
+
         issue_id = yt_client.create_issue(issue_data)['id']
+
+        for field, value in project_field_values.iteritems():
+            if value:
+                value = [value] if type(value) != list else value
+                cmd = map(lambda x: "%s %s" % (field, x), value)
+                yt_client.execute_command(issue_id, " ".join(cmd))
 
         if tags:
             yt_client.add_tags(issue_id, tags)
@@ -334,7 +366,7 @@ class YouTrackPlugin(IssuePlugin):
         return "%sissue/%s" % (url, issue_id)
 
     def get_view_response(self, request, group):
-        if request.is_ajax():
+        if request.is_ajax() and request.GET.get('action'):
             return self.view(request, group)
         return super(YouTrackPlugin, self).get_view_response(request, group)
 
@@ -408,15 +440,3 @@ class YouTrackPlugin(IssuePlugin):
             'issues': project_issues[:page_limit]
         }
         return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder))
-
-    def project_fields_view(self, request, group):
-        project_fields = self.get_project_fields(group.project)
-        ignore_fields = self.get_option('ignore_fields', group.project)
-        context = {
-            'form': self.project_fields_form(project_fields, ignore_fields),
-            'title': self.get_existing_issue_title(),
-        }
-        response = self.render(self.project_fields_template, context)
-        if not request.is_ajax():
-            return response
-        return response.respond(request)
