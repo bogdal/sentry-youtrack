@@ -52,8 +52,10 @@
                         $(".spinner").css('left', '50%');
                     }
                 }).done(function(data){
+                    var container = $(".form-fields");
                     var form = $("#create-issue .form-fields", data);
-                    $(".form-fields").html(form);
+                    container.html(form);
+                    container.find("select").addClass('span3').select2();
                 });
             }
         </script>
