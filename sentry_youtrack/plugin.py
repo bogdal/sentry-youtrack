@@ -133,7 +133,7 @@ class YoutrackConfigurationForm(forms.Form):
         required=True
     )
     default_tags = forms.CharField(
-        label=_("Tags"),
+        label=_("Default tags"),
         help_text=_("Comma-separated list of tags"),
         widget=forms.TextInput(attrs={'class': 'span6', 'placeholder': "e.g. sentry"}),
         required=False
@@ -169,7 +169,7 @@ class YoutrackConfigurationForm(forms.Form):
         if initial and client:
             fieldsets.append(
                 Fieldset(
-                    _("Default values"),
+                    _("Create issue"),
                     'default_tags',
                     'ignore_fields')
             )
