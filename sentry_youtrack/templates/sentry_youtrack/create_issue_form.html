@@ -34,28 +34,36 @@
         </div>
     </form>
 </div>
-
-{% block js %}
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/spin.js/1.3.2/spin.min.js"></script>
-
-    {% if not request.POST %}
-    <script type="text/javascript">
-
-        var spinner = new Spinner().spin();
-
-        $(document).ready(function(){
-            $.ajax({
-                'url': "?form=1",
-                beforeSend: function( xhr ) {
-                    $(".form-fields").html(spinner.el);
-                    $(".spinner").css('left', '50%');
-                }
-            }).done(function(data){
-                var form = $("#create-issue .form-fields", data);
-                $(".form-fields").html(form);
-            });
-        });
-    </script>
-    {% endif %}
 {% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+
+    {% block yt_issue_js %}
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/spin.js/1.3.2/spin.min.js"></script>
+        <script type="text/javascript">
+            var spinner = new Spinner().spin();
+
+            function load_issue_form() {
+                $.ajax({
+                    'url': "?form=1",
+                    beforeSend: function( xhr ) {
+                        $(".form-fields").html(spinner.el);
+                        $(".spinner").css('left', '50%');
+                    }
+                }).done(function(data){
+                    var form = $("#create-issue .form-fields", data);
+                    $(".form-fields").html(form);
+                });
+            }
+        </script>
+
+        {% if not request.POST %}
+            <script>
+                $(function(){
+                    load_issue_form();
+                });
+            </script>
+        {% endif %}
+    {% endblock %}
 {% endblock %}
