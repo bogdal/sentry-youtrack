@@ -56,13 +56,21 @@ class YouTrackProjectForm(forms.Form):
             values[name] = self.cleaned_data.get(form_field_name)
         return values
 
+    def _get_initial(self, field_name):
+        default_fields = self.initial.get('default_fields', {})
+        field_key = md5(field_name).hexdigest()
+        if field_key in default_fields.keys():
+            return default_fields.get(field_key)
+
     def _get_form_field(self, project_field):
         field_type = project_field['type']
         field_values = project_field['values']
         form_field = self.FIELD_TYPE_MAPPING.get(field_type)
+
         kwargs = {
             'label': project_field['name'],
-            'required': False
+            'required': False,
+            'initial': self._get_initial(project_field['name'])
         }
         if form_field:
             return form_field(**kwargs)
@@ -107,6 +115,11 @@ class YouTrackAssignIssueForm(forms.Form):
         label=_("YouTrack Issue"),
         widget=forms.TextInput(attrs={'class': 'span6',
                                       'placeholder': _("Choose issue")}))
+
+
+class DefaultFieldForm(forms.Form):
+    field = forms.CharField(required=True, max_length=255)
+    value = forms.CharField(required=True, max_length=255)
 
 
 class YoutrackConfigurationForm(forms.Form):
@@ -282,6 +295,7 @@ class YouTrackPlugin(IssuePlugin):
     project_conf_form = YoutrackConfigurationForm
     project_conf_template = "sentry_youtrack/project_conf_form.html"
     project_fields_form = YouTrackProjectForm
+    default_fields_key = 'default_fields'
 
     resource_links = [
         (_("Bug Tracker"), "https://github.com/bogdal/sentry-youtrack/issues"),
@@ -314,6 +328,8 @@ class YouTrackPlugin(IssuePlugin):
             'title': self._get_group_title(request, group, event),
             'description': self._get_group_description(request, group, event),
             'tags': self.get_option('default_tags', group.project),
+            'default_fields': self.get_option(self.default_fields_key,
+                                              group.project)
         }
         return initial
 
@@ -440,3 +456,16 @@ class YouTrackPlugin(IssuePlugin):
             'issues': project_issues[:page_limit]
         }
         return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder))
+
+    def save_field_as_default_view(self, request, group):
+        form = DefaultFieldForm(request.POST or None)
+        if form.is_valid():
+            field = form.cleaned_data.get('field')
+            value = form.cleaned_data.get('value')
+            default_fields = self.get_option(self.default_fields_key,
+                                             group.project) or {}
+            default_fields[md5(field).hexdigest()] = value
+            self.set_option(self.default_fields_key,
+                            default_fields,
+                            group.project)
+        return HttpResponse()

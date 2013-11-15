@@ -58,6 +58,18 @@
                     container.find("select").addClass('span3').select2();
                 });
             }
+
+            function save_as_default(field, value) {
+                $.ajax({
+                    'url': "?action=save_field_as_default",
+                    'type': "POST",
+                    'data': {
+                        field: field,
+                        value: value
+                    },
+                    beforeSend: function( xhr ) {}
+                }).done(function(data){});
+            }
         </script>
 
         {% if not request.POST %}
