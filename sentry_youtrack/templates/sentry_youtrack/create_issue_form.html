@@ -44,6 +44,28 @@
         <script type="text/javascript">
             var spinner = new Spinner().spin();
 
+            function save_as_default(field, value) {
+                $.ajax({
+                    'url': "?action=save_field_as_default",
+                    'type': "POST",
+                    'data': {
+                        field: field,
+                        value: value
+                    },
+                    beforeSend: function( xhr ) {}
+                }).done(function(data){});
+            }
+
+            function init_action_buttons(container) {
+                container.find(".project-field[data-field]").each(function(){
+                    var action_button = $("<button>")
+                            .attr('type', 'button')
+                            .addClass('save-as-default')
+                            .html($('<i>').addClass('icon-check'));
+                    $(this).after(action_button);
+                });
+            }
+
             function load_issue_form() {
                 $.ajax({
                     'url': "?form=1",
@@ -56,20 +78,20 @@
                     var form = $("#create-issue .form-fields", data);
                     container.html(form);
                     container.find("select").addClass('span3').select2();
+                    init_action_buttons(container);
                 });
             }
 
-            function save_as_default(field, value) {
-                $.ajax({
-                    'url': "?action=save_field_as_default",
-                    'type': "POST",
-                    'data': {
-                        field: field,
-                        value: value
-                    },
-                    beforeSend: function( xhr ) {}
-                }).done(function(data){});
-            }
+            $(function(){
+                var container = $("#create-issue");
+
+                container.delegate(".save-as-default", "click", function(){
+                    var field = $(this).parents('.controls').find('.project-field[data-field]');
+                    save_as_default(field.data('field'), String(field.val()));
+                });
+
+                init_action_buttons(container);
+            });
         </script>
 
         {% if not request.POST %}

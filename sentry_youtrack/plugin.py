@@ -42,6 +42,10 @@ class YouTrackProjectForm(forms.Form):
         for field in project_fields:
             form_field = self._get_form_field(field)
             if form_field:
+                form_field.widget.attrs = {
+                    'class': 'project-field',
+                    'data-field': field['name']
+                }
                 index = len(fields) + 1
                 field_name = '%s%s' % (self.PROJECT_FIELD_PREFIX, index)
                 self.fields[field_name] = form_field
@@ -77,9 +81,9 @@ class YouTrackProjectForm(forms.Form):
         if field_values:
             choices = zip(field_values, field_values)
             if "[*]" in field_type:
-                return forms.MultipleChoiceField(
-                    widget=forms.CheckboxSelectMultiple,
-                    choices=choices, **kwargs)
+                if kwargs['initial']:
+                    kwargs['initial'] = kwargs['initial'].split(',')
+                return forms.MultipleChoiceField(choices=choices, **kwargs)
             kwargs['choices'] = [('', '-----')] + choices
             return forms.ChoiceField(**kwargs)
 
@@ -118,8 +122,25 @@ class YouTrackAssignIssueForm(forms.Form):
 
 
 class DefaultFieldForm(forms.Form):
+
     field = forms.CharField(required=True, max_length=255)
-    value = forms.CharField(required=True, max_length=255)
+    value = forms.CharField(required=False, max_length=255)
+
+    def __init__(self, plugin, project, *args, **kwargs):
+        super(DefaultFieldForm, self).__init__(*args, **kwargs)
+        self.plugin = plugin
+        self.project = project
+
+    def save(self):
+        data = self.cleaned_data
+        default_fields = self.plugin.get_option(
+            self.plugin.default_fields_key,
+            self.project) or {}
+
+        default_fields[md5(data['field']).hexdigest()] = data['value']
+        self.plugin.set_option(self.plugin.default_fields_key,
+                               default_fields,
+                               self.project)
 
 
 class YoutrackConfigurationForm(forms.Form):
@@ -458,14 +479,7 @@ class YouTrackPlugin(IssuePlugin):
         return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder))
 
     def save_field_as_default_view(self, request, group):
-        form = DefaultFieldForm(request.POST or None)
+        form = DefaultFieldForm(self, group.project, request.POST or None)
         if form.is_valid():
-            field = form.cleaned_data.get('field')
-            value = form.cleaned_data.get('value')
-            default_fields = self.get_option(self.default_fields_key,
-                                             group.project) or {}
-            default_fields[md5(field).hexdigest()] = value
-            self.set_option(self.default_fields_key,
-                            default_fields,
-                            group.project)
+            form.save()
         return HttpResponse()
