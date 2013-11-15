@@ -36,15 +36,29 @@
 </div>
 {% endblock %}
 
+{% block css %}
+    {{ block.super }}
+    <style type="text/css">
+        .save-as-default {
+            opacity: 0.7;
+        }
+        .save-as-default:hover {
+            opacity: 0.5;
+        }
+    </style>
+{% endblock %}
+
 {% block scripts %}
     {{ block.super }}
 
     {% block yt_issue_js %}
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/spin.js/1.3.2/spin.min.js"></script>
         <script type="text/javascript">
-            var spinner = new Spinner().spin();
+            
+            var SAVE_AS_DEFAULT_BUTTON_MSG = "{% trans 'Save this as a default value' %}";
 
-            function save_as_default(field, value) {
+            function save_as_default(el, field, value) {
+
                 $.ajax({
                     'url': "?action=save_field_as_default",
                     'type': "POST",
@@ -52,21 +66,31 @@
                         field: field,
                         value: value
                     },
-                    beforeSend: function( xhr ) {}
-                }).done(function(data){});
+                    beforeSend: function( xhr ) {
+                        el.fadeOut(200);
+                    }
+                }).done(function(data){
+                    el.fadeIn(200);
+                });
             }
 
             function init_action_buttons(container) {
                 container.find(".project-field[data-field]").each(function(){
                     var action_button = $("<button>")
                             .attr('type', 'button')
+                            .attr('title', SAVE_AS_DEFAULT_BUTTON_MSG)
+                            .attr('data-placement', 'right')
+                            .addClass('btn-link')
                             .addClass('save-as-default')
-                            .html($('<i>').addClass('icon-check'));
+                            .html($('<i>').addClass('icon-share'));
                     $(this).after(action_button);
                 });
+                $('button[title]').tooltip();
             }
 
             function load_issue_form() {
+                var spinner = new Spinner().spin();
+
                 $.ajax({
                     'url': "?form=1",
                     beforeSend: function( xhr ) {
@@ -87,7 +111,7 @@
 
                 container.delegate(".save-as-default", "click", function(){
                     var field = $(this).parents('.controls').find('.project-field[data-field]');
-                    save_as_default(field.data('field'), String(field.val()));
+                    save_as_default($(this), field.data('field'), String(field.val()));
                 });
 
                 init_action_buttons(container);
