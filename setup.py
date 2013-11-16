@@ -6,7 +6,7 @@ import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'test_settings')
 
 install_requires = [
-    'sentry>=5.1.0',
+    'sentry>=6.1.0',
     'requests>=1.1.0',
     'BeautifulSoup>=3.2.1',
 ]
