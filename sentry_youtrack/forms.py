@@ -52,7 +52,7 @@ class YouTrackProjectForm(forms.Form):
         return values
 
     def _get_initial(self, field_name):
-        default_fields = self.initial.get('default_fields', {})
+        default_fields = self.initial.get('default_fields') or {}
         field_key = md5(field_name).hexdigest()
         if field_key in default_fields.keys():
             return default_fields.get(field_key)
