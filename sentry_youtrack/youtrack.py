@@ -10,6 +10,7 @@ class YouTrackClient(object):
 
     LOGIN_URL = '/rest/user/login'
     PROJECT_URL = '/rest/admin/project/<project_id>'
+    PROJECT_FIELDS = '/rest/admin/project/<project_id>/customfield'
     PROJECTS_URL = '/rest/project/all'
     CREATE_URL = '/rest/issue'
     ISSUES_URL = '/rest/issue/byproject/<project_id>'
@@ -56,10 +57,18 @@ class YouTrackClient(object):
         self.response.raise_for_status()
         return BeautifulStoneSoup(self.response.text)
 
-    def _get_enumeration(self, soap):
+    def _get_bundle(self, soap, bundle='enumeration'):
         if soap.find('error'):
             raise YouTrackError(soap.find('error').string)
-        return [item.text for item in soap.enumeration]
+
+        bundle_method = '_get_%s_values' % bundle
+        if hasattr(self, bundle_method):
+            return getattr(self, bundle_method)(soap)
+
+        return [item.text for item in getattr(soap, bundle)]
+
+    def _get_userbundle_values(self, soap):
+        return [item['login'] for item in soap.userbundle]
 
     def get_project_name(self, project_id):
         url = self.url + self.PROJECT_URL.replace('<project_id>', project_id)
@@ -78,19 +87,18 @@ class YouTrackClient(object):
 
     def get_priorities(self):
         values = self.get_custom_field_values('bundle', 'Priorities')
-        return self._get_enumeration(values)
+        return self._get_bundle(values)
 
     def get_issue_types(self):
         values = self.get_custom_field_values('bundle', 'Types')
-        return self._get_enumeration(values)
+        return self._get_bundle(values)
 
     def get_custom_field_values(self, name, value):
         url = self.url + (self.CUSTOM_FIELD_VALUES
                           .replace("<param_name>", name)
                           .replace('<param_value>', value))
 
-        response = requests.get(url, cookies=self.cookies)
-        return BeautifulStoneSoup(response.text)
+        return self._request(url, method='get')
 
     def get_project_issues(self, project_id, query=None, offset=0, limit=15):
         url = self.url + self.ISSUES_URL.replace('<project_id>', project_id)
@@ -112,3 +120,47 @@ class YouTrackClient(object):
         for tag in tags:
             cmd = u'add tag %s' % tag
             self.execute_command(issue, cmd)
+
+    def get_project_fields_list(self, project_id):
+        url = self.url + self.PROJECT_FIELDS.replace('<project_id>', project_id)
+        soap = self._request(url, method='get')
+        return soap.projectcustomfieldrefs
+
+    def get_project_fields(self, project_id, ignore_fields=[]):
+        fields = []
+        for field in self.get_project_fields_list(project_id):
+            if not field['name'] in ignore_fields:
+                fields.append(self._get_custom_project_field_details(field))
+        return fields
+
+    def _get_custom_project_field_details(self, field):
+        field_data = self._request(field['url'], method='get')
+        field_type = field_data.projectcustomfield['type']
+        type_prefix = field_type[:field_type.find('[')]
+
+        type_name = "%sBundle" % type_prefix
+        if type_prefix == 'enum':
+            type_name = 'bundle'
+
+        bundles = {
+            'enum': 'enumeration',
+            'state': 'statebundle',
+            'user': 'userbundle',
+            'ownedField': 'ownedfieldbundle',
+            'version': 'versions',
+            'build': 'buildbundle',
+        }
+
+        values = None
+        if field_data.param:
+            values = self.get_custom_field_values(type_name,
+                                                  field_data.param['value'])
+            values = self._get_bundle(values, bundles.get(type_prefix))
+
+        field_details = {
+            'name': field_data.projectcustomfield['name'],
+            'type': field_data.projectcustomfield['type'],
+            'empty_text': field_data.projectcustomfield['emptytext'],
+            'values': values,
+        }
+        return field_details

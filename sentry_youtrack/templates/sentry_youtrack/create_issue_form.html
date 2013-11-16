@@ -1,6 +1,6 @@
 {% extends "sentry/groups/details.html" %}
 
-{% load i18n crispy_forms_filters %}
+{% load i18n crispy_forms_filters static_compiler %}
 
 {% block title %}{{ title }} | {{ block.super }}{% endblock %}
 
@@ -21,15 +21,42 @@
     {% endif %}
 
 
-    <form class="form-horizontal" action="" method="post">
+    <form id='create-issue' class="form-horizontal" action="" method="post">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next }}" />
-        {{ form|crispy }}
-        <p class="actions">
-            {% block submit_button %}
-                <button type="submit" class="btn btn-primary">{% trans "Create issue" %}</button>
-            {% endblock %}
-        </p>
+        <div class="form-fields">
+            {{ form|crispy }}
+            <p class="actions">
+                {% block submit_button %}
+                    <button type="submit" class="btn btn-primary">{% trans "Create issue" %}</button>
+                {% endblock %}
+            </p>
+        </div>
     </form>
 </div>
+{% endblock %}
+
+{% block css %}
+    {{ block.super }}
+    {% staticbundle 'sentry_youtrack/styles.css' %}
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/spin.js/1.3.2/spin.min.js"></script>
+    <script type="text/javascript">
+        var SAVE_AS_DEFAULT_BUTTON_MSG = "{% trans 'Save this as a default value' %}";
+    </script>
+    {% staticbundle 'sentry_youtrack/scripts.js' %}
+
+    {% block yt_issue_js %}
+        {% if not request.POST %}
+            <script>
+                $(function(){
+                    load_issue_form();
+                });
+            </script>
+        {% endif %}
+    {% endblock %}
 {% endblock %}
