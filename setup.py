@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 from sentry_youtrack import VERSION
+import os
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'test_settings')
 
 install_requires = [
     'sentry>=5.1.0',
@@ -38,4 +41,5 @@ setup(
         'Programming Language :: Python',
         'License :: OSI Approved :: BSD License',
     ],
+    test_suite='sentry_youtrack.tests',
 )
