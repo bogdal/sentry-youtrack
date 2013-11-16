@@ -25,8 +25,8 @@ class YouTrackClient(object):
         if api_key is None:
             self._login(username, password)
         else:
-            self.cookies = {self.API_KEY_COOKIE_NAME: api_key}
             self.api_key = api_key
+        self.cookies = {self.API_KEY_COOKIE_NAME: self.api_key}
 
     def _login(self, username, password):
         credentials = {
@@ -35,8 +35,7 @@ class YouTrackClient(object):
         }
         url = self.url + self.LOGIN_URL
         self._request(url, data=credentials, method='post')
-        self.cookies = self.response.cookies
-        self.api_key = self.cookies.get(self.API_KEY_COOKIE_NAME)
+        self.api_key = self.response.cookies.get(self.API_KEY_COOKIE_NAME)
 
     def _request(self, url, data=None, params=None, method='get'):
         if method not in ['get', 'post']:
@@ -45,7 +44,7 @@ class YouTrackClient(object):
         kwargs = {
             'url': url,
             'data': data,
-            'params': params
+            'params': params,
         }
         if hasattr(self, 'cookies'):
             kwargs['cookies'] = self.cookies
