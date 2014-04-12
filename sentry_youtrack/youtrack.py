@@ -67,7 +67,12 @@ class YouTrackClient(object):
         return [item.text for item in getattr(soap, bundle)]
 
     def _get_userbundle_values(self, soap):
-        return [item['login'] for item in soap.userbundle]
+        def get_user_logins(xml):
+            return [item['login'] for item in xml.findAll('user')]
+        users = set(get_user_logins(soap.userbundle))
+        for group in soap.userbundle.findAll('usergroup'):
+            users.update(get_user_logins(self.get_users_from_group(group['name'])))
+        return sorted(users)
 
     def get_project_name(self, project_id):
         url = self.url + self.PROJECT_URL.replace('<project_id>', project_id)
@@ -78,6 +83,11 @@ class YouTrackClient(object):
         url = self.url + self.USER_URL.replace('<user>', user)
         soap = self._request(url, method='get')
         return soap.user
+
+    def get_users_from_group(self, group):
+        url = self.url + self.USER_URL.replace('/<user>', '')
+        soap = self._request(url, method='get', params={'group': group})
+        return soap.userrefs
 
     def get_projects(self):
         url = self.url + self.PROJECTS_URL
