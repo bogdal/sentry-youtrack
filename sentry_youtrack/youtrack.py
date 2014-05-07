@@ -20,7 +20,8 @@ class YouTrackClient(object):
 
     API_KEY_COOKIE_NAME = 'jetbrains.charisma.main.security.PRINCIPAL'
 
-    def __init__(self, url, username=None, password=None, api_key=None):
+    def __init__(self, url, username=None, password=None, api_key=None, verify_ssl_certificate=True):
+        self.verify_ssl_certificate = verify_ssl_certificate
         self.url = url.rstrip('/') if url else ''
         if api_key is None:
             self._login(username, password)
@@ -45,6 +46,7 @@ class YouTrackClient(object):
             'url': url,
             'data': data,
             'params': params,
+            'verify': self.verify_ssl_certificate,
         }
         if hasattr(self, 'cookies'):
             kwargs['cookies'] = self.cookies

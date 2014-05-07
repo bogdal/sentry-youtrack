@@ -223,20 +223,27 @@ class YouTrackConfigurationForm(forms.Form):
         self.helper.form_tag = False
         self.helper.layout = Layout(*fieldsets)
 
-    def get_youtrack_client(self, data):
+    def get_youtrack_client(self, data, additional_params=None):
         yt_settings = {
             'url': data.get('url'),
             'username': data.get('username'),
             'password': data.get('password'),
         }
+        if additional_params:
+            yt_settings.update(additional_params)
 
         client = None
 
         try:
             client = YouTrackClient(**yt_settings)
         except (HTTPError, ConnectionError) as e:
-            self.youtrack_client_error = u"%s %s" % (_("Unable to connect to YouTrack."), e)
-        else:
+            if 'certificate verify failed' in unicode(e):
+                client = self.get_youtrack_client(data, {'verify_ssl_certificate': False})
+                self.warning_message = _("SSL certificate  verification failed")
+            else:
+                self.youtrack_client_error = u"%s %s" % (_("Unable to connect to YouTrack."), e)
+
+        if client:
             try:
                 client.get_user(yt_settings.get('username'))
             except HTTPError as e:
