@@ -12,6 +12,7 @@ function save_as_default(el, field, value) {
             el.fadeOut(200);
         }
     }).done(function(data){
+        el.find('i').removeClass('icon-share').addClass('icon-ok');
         el.fadeIn(200);
     });
 }

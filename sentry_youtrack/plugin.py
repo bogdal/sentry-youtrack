@@ -3,7 +3,6 @@ import json
 
 from django import forms
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
 from sentry.models import GroupMeta
@@ -37,7 +36,7 @@ class YouTrackPlugin(IssuePlugin):
         (_("Bug Tracker"), "https://github.com/bogdal/sentry-youtrack/issues"),
         (_("Source"), "http://github.com/bogdal/sentry-youtrack"),
     ]
-    
+
     def is_configured(self, request, project, **kwargs):
         return bool(self.get_option('project', project))
 
@@ -149,10 +148,7 @@ class YouTrackPlugin(IssuePlugin):
             prefix = self.get_conf_key()
             GroupMeta.objects.set_value(group, '%s:tid' % prefix, issue_id)
 
-            return self.redirect(reverse('sentry-group',
-                                         args=[group.team.slug,
-                                               group.project_id,
-                                               group.pk]))
+            return self.redirect(group.get_absolute_url())
 
         context = {
             'form': form,
