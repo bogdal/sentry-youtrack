@@ -181,15 +181,11 @@ class YouTrackConfigurationForm(forms.Form):
                 self.full_clean()
                 self._errors['username'] = [self.youtrack_client_error]
 
-        fieldsets = [
-            Fieldset(
-                None,
-                'url',
-                'username',
-                'password',
-                'project',
-            )
-        ]
+        default_fields = ['url', 'username', 'password']
+        if initial and client:
+            default_fields.append('project')
+
+        fieldsets = [Fieldset(None, *default_fields)]
 
         if initial and client:
             fieldsets.append(
