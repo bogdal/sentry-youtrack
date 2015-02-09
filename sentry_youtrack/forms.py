@@ -25,7 +25,7 @@ class YouTrackProjectForm(forms.Form):
 
     def __init__(self, project_fields=None, *args, **kwargs):
         super(YouTrackProjectForm, self).__init__(*args, **kwargs)
-        if not project_fields is None:
+        if project_fields is not None:
             self.add_project_fields(project_fields)
 
     def add_project_fields(self, project_fields):
@@ -92,7 +92,8 @@ class NewIssueForm(YouTrackProjectForm):
     tags = forms.CharField(
         label=_("Tags"),
         help_text=_("Comma-separated list of tags"),
-        widget=forms.TextInput(attrs={'class': 'span6', 'placeholder': "e.g. sentry"}),
+        widget=forms.TextInput(attrs={
+            'class': 'span6', 'placeholder': "e.g. sentry"}),
         required=False
     )
 
@@ -108,8 +109,8 @@ class AssignIssueForm(forms.Form):
 
     issue = forms.CharField(
         label=_("YouTrack Issue"),
-        widget=forms.TextInput(attrs={'class': 'span6',
-                                      'placeholder': _("Choose issue")}))
+        widget=forms.TextInput(
+            attrs={'class': 'span6', 'placeholder': _("Choose issue")}))
 
 
 class DefaultFieldForm(forms.Form):
@@ -136,9 +137,18 @@ class DefaultFieldForm(forms.Form):
 
 class YouTrackConfigurationForm(forms.Form):
 
+    error_message = {
+        'client': _("Unable to connect to YouTrack."),
+        'invalid_ssl': _("SSL certificate  verification failed"),
+        'missing_fields': _('Missing required fields'),
+        'perms': _("User doesn't have Low-level Administration permissions."),
+        'required': _("This field is required.")}
+
     url = forms.URLField(
         label=_("YouTrack Instance URL"),
-        widget=forms.TextInput(attrs={'class': 'span9', 'placeholder': 'e.g. "https://youtrack.myjetbrains.com/"'}),
+        widget=forms.TextInput(
+            attrs={'class': 'span9',
+                   'placeholder': 'e.g. "https://youtrack.myjetbrains.com/"'}),
         required=True
     )
     username = forms.CharField(
@@ -160,7 +170,8 @@ class YouTrackConfigurationForm(forms.Form):
     default_tags = forms.CharField(
         label=_("Default tags"),
         help_text=_("Comma-separated list of tags"),
-        widget=forms.TextInput(attrs={'class': 'span6', 'placeholder': "e.g. sentry"}),
+        widget=forms.TextInput(
+            attrs={'class': 'span6', 'placeholder': "e.g. sentry"}),
         required=False
     )
     ignore_fields = forms.MultipleChoiceField(
@@ -172,6 +183,8 @@ class YouTrackConfigurationForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(YouTrackConfigurationForm, self).__init__(*args, **kwargs)
 
+        self.youtrack_client_error = ''
+        self.warning_message = ''
         client = None
         initial = kwargs.get("initial")
 
@@ -192,23 +205,23 @@ class YouTrackConfigurationForm(forms.Form):
                 Fieldset(
                     _("Create issue"),
                     'default_tags',
-                    'ignore_fields')
-            )
+                    'ignore_fields'))
 
             if initial.get('project'):
                 fields = client.get_project_fields_list(initial.get('project'))
                 names = [field['name'] for field in fields]
-                choices = zip(names, names)
-                self.fields['ignore_fields'].choices = choices
+                self.fields['ignore_fields'].choices = zip(names, names)
 
             projects = [(' ', u"- Choose project -")]
             for project in client.get_projects():
-                projects.append((project['shortname'], u"%s (%s)" % (project['name'], project['shortname'])))
+                projects.append((project['shortname'], u"%s (%s)" % (
+                    project['name'], project['shortname'])))
             self.fields["project"].choices = projects
 
             if not any(args) and not initial.get('project'):
-                self.second_step_msg = u"%s %s" % (_("Your credentials are valid but plugin is NOT active yet."),
-                                                   _("Please fill in remaining required fields."))
+                self.second_step_msg = _("Your credentials are valid but "
+                                         "plugin is NOT active yet. Please "
+                                         "fill in remaining required fields.")
 
         else:
             del self.fields["project"]
@@ -223,8 +236,8 @@ class YouTrackConfigurationForm(forms.Form):
         yt_settings = {
             'url': data.get('url'),
             'username': data.get('username'),
-            'password': data.get('password'),
-        }
+            'password': data.get('password')}
+
         if additional_params:
             yt_settings.update(additional_params)
 
@@ -234,26 +247,29 @@ class YouTrackConfigurationForm(forms.Form):
             client = YouTrackClient(**yt_settings)
         except (HTTPError, ConnectionError) as e:
             if 'certificate verify failed' in unicode(e):
-                client = self.get_youtrack_client(data, {'verify_ssl_certificate': False})
-                self.warning_message = _("SSL certificate  verification failed")
+                client = self.get_youtrack_client(
+                    data, additional_params={'verify_ssl_certificate': False})
+                self.warning_message = self.error_message['invalid_ssl']
             else:
-                self.youtrack_client_error = u"%s %s" % (_("Unable to connect to YouTrack."), e)
+                self.youtrack_client_error = u"%s %s" % (
+                    self.error_message['client'], e)
 
         if client:
             try:
                 client.get_user(yt_settings.get('username'))
             except HTTPError as e:
                 if e.response.status_code == 403:
-                    self.youtrack_client_error = _("User doesn't have Low-level Administration permissions.")
+                    self.youtrack_client_error = self.error_message['perms']
                     client = None
 
         return client
 
     def clean_password(self):
-        password = self.cleaned_data.get('password') or self.initial.get('password')
+        password = (self.cleaned_data.get('password')
+                    or self.initial.get('password'))
 
         if not password:
-            raise ValidationError(_("This field is required."))
+            raise ValidationError(self.error_message['required'])
 
         return password
 
@@ -261,19 +277,21 @@ class YouTrackConfigurationForm(forms.Form):
         project = self.cleaned_data.get('project').strip()
 
         if not project:
-            raise ValidationError(_("This field is required."))
+            raise ValidationError(self.error_message['required'])
 
         return project
 
     def clean(self):
         data = self.cleaned_data
 
-        if not all(data.get(field) for field in ('url', 'username', 'password')):
-            raise ValidationError(_('Missing required fields'))
+        if not all(data.get(field) for field in (
+                'url', 'username', 'password')):
+            raise ValidationError(self.error_message['missing_fields'])
 
         client = self.get_youtrack_client(data)
         if not client:
-            self._errors['username'] = self.error_class([self.youtrack_client_error])
+            self._errors['username'] = self.error_class(
+                [self.youtrack_client_error])
             del data['username']
 
         return data
