@@ -1,6 +1,7 @@
 {% load i18n crispy_forms_tags %}
 
 <form class="form-horizontal" action="" method="post">
+    <input type="hidden" name="plugin" value="{{ plugin.slug }}" />
     {% crispy form %}
     <div class="form-actions">
         <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
