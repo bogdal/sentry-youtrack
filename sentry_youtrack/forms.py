@@ -1,7 +1,5 @@
 from hashlib import md5
 
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
@@ -198,15 +196,7 @@ class YouTrackConfigurationForm(forms.Form):
         if initial and client:
             default_fields.append('project')
 
-        fieldsets = [Fieldset(None, *default_fields)]
-
         if initial and client:
-            fieldsets.append(
-                Fieldset(
-                    _("Create issue"),
-                    'default_tags',
-                    'ignore_fields'))
-
             if initial.get('project'):
                 fields = client.get_project_fields_list(initial.get('project'))
                 names = [field['name'] for field in fields]
@@ -227,10 +217,6 @@ class YouTrackConfigurationForm(forms.Form):
             del self.fields["project"]
             del self.fields["default_tags"]
             del self.fields["ignore_fields"]
-
-        self.helper = FormHelper()
-        self.helper.form_tag = False
-        self.helper.layout = Layout(*fieldsets)
 
     def get_youtrack_client(self, data, additional_params=None):
         yt_settings = {
