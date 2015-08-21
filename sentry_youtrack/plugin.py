@@ -180,7 +180,7 @@ class YouTrackPlugin(IssuePlugin):
         for issue in issues:
             project_issues.append({
                 'id': issue['id'],
-                'state': issue.find("field", {'name': 'State'}).text,
+                'state': issue.find("field", {'name': 'State'}).value.text,
                 'summary': issue.find("field", {'name': 'summary'}).text})
 
         data = {
