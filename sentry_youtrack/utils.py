@@ -17,3 +17,10 @@ def cache_this(timeout=60):
             return result
         return wrapper
     return decorator
+
+
+def get_int(value, default=0):
+    try:
+        return int(value)
+    except ValueError:
+        return default
