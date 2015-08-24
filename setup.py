@@ -1,13 +1,31 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
 from sentry_youtrack import VERSION
 import os
+import sys
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'test_settings')
 
-install_requires = [
-    'sentry>=6.1.0',
-]
+
+class PyTest(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = []
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
+
 
 setup(
     name='sentry-youtrack',
@@ -19,7 +37,9 @@ setup(
     long_description=open('README.rst').read(),
     license='BSD',
     packages=find_packages(),
-    install_requires=install_requires,
+    install_requires=[
+       'sentry>=6.1.0',
+    ],
     include_package_data=True,
     zip_safe=False,
     entry_points={
@@ -39,5 +59,11 @@ setup(
         'Programming Language :: Python',
         'License :: OSI Approved :: BSD License',
     ],
-    test_suite='sentry_youtrack.tests',
+    cmdclass={
+        'test': PyTest
+    },
+    tests_require=[
+        'mock==1.3.0',
+        'pytest',
+    ]
 )
