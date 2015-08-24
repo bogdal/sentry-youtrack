@@ -1,0 +1,24 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/project/myproject
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><project
+        name="My project" id="myproject" archived="false" lead="root" assigneesUrl="https://youtrack.myjetbrains.com/rest/admin/project/myproject/assignee"
+        subsystemsUrl="https://youtrack.myjetbrains.com/rest/admin/project/myproject/subsystem"
+        buildsUrl="https://youtrack.myjetbrains.com/rest/admin/project/myproject/build" versionsUrl="https://youtrack.myjetbrains.com/rest/admin/project/myproject/version"/>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['421']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=17ht1d0ssiujbds2cfzj7jk3v;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+version: 1

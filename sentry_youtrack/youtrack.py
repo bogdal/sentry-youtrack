@@ -1,6 +1,8 @@
 import requests
 from BeautifulSoup import BeautifulStoneSoup
 
+from sentry_youtrack import VERSION
+
 
 class YouTrackError(Exception):
     pass
@@ -111,7 +113,9 @@ class YouTrackClient(object):
             'url': url,
             'data': data,
             'params': params,
-            'verify': self.verify_ssl_certificate}
+            'verify': self.verify_ssl_certificate,
+            'headers': {
+                'User-Agent': 'sentry-youtrack/%s' % VERSION}}
 
         if hasattr(self, 'cookies'):
             kwargs['cookies'] = self.cookies

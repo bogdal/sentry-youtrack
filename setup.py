@@ -63,7 +63,7 @@ setup(
         'test': PyTest
     },
     tests_require=[
-        'mock==1.3.0',
         'pytest',
+        'vcrpy>=1.7.3',
     ]
 )

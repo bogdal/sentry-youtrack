@@ -1,0 +1,368 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><projectCustomFieldRefs><projectCustomField
+        name="Priority" url="https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Priority"/><projectCustomField
+        name="Type" url="https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Type"/><projectCustomField
+        name="State" url="https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/State"/><projectCustomField
+        name="Assignee" url="https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Assignee"/><projectCustomField
+        name="Subsystem" url="https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Subsystem"/><projectCustomField
+        name="Fix versions" url="https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Fix%20versions"/><projectCustomField
+        name="Affected versions" url="https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Affected%20versions"/><projectCustomField
+        name="Fixed in build" url="https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Fixed%20in%20build"/></projectCustomFieldRefs>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['1058']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=1vzne2172y4ch1vmdis2somsaf;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Priority
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><projectCustomField
+        name="Priority" type="enum[1]" emptyText="No Priority" canBeEmpty="false"><param
+        name="bundle" value="Priorities"/><defaultValue>Normal</defaultValue></projectCustomField>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['246']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=169r0uv4i0m1m1vcfkthdwnv5k;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/customfield/bundle/Priorities
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><enumeration
+        name="Priorities"><value colorIndex="20">Show-stopper</value><value colorIndex="19">Critical</value><value
+        colorIndex="18">Major</value><value colorIndex="17">Normal</value><value colorIndex="16">Minor</value></enumeration>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['291']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=gn8qtat24nkdwjg60qs9d0mm;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Type
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><projectCustomField
+        name="Type" type="enum[1]" emptyText="No Type" canBeEmpty="false"><param name="bundle"
+        value="Types"/><defaultValue>Bug</defaultValue></projectCustomField>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['230']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=uhx0lb5xejqqxlo0c53dr9ae;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/customfield/bundle/Types
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><enumeration
+        name="Types"><value>Bug</value><value>Cosmetics</value><value>Exception</value><value>Feature</value><value>Task</value><value>Usability
+        Problem</value><value>Performance Problem</value><value>Epic</value><value>Meta
+        Issue</value><value>Auto-reported exception</value></enumeration>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['350']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=otdmd17w3ycunr11vj31pzl0;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/State
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><projectCustomField
+        name="State" type="state[1]" emptyText="No State" canBeEmpty="false"><param
+        name="bundle" value="States"/><defaultValue>Submitted</defaultValue></projectCustomField>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['240']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=18e24da0vlchp60jaz1sestav;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/customfield/stateBundle/States
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><stateBundle
+        name="States"><state isResolved="false">Submitted</state><state isResolved="false">Open</state><state
+        isResolved="false">In Progress</state><state isResolved="false">To be discussed</state><state
+        isResolved="false">Reopened</state><state isResolved="true">Can''t Reproduce</state><state
+        isResolved="true">Duplicate</state><state isResolved="true">Fixed</state><state
+        isResolved="true">Won''t fix</state><state description="Issue description
+        is incomplete" isResolved="true">Incomplete</state><state isResolved="true">Obsolete</state><state
+        description="Issue fix is verified" isResolved="true">Verified</state><state
+        isResolved="false">New</state></stateBundle>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['727']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=10qdznnzdublo154dyt33zqtrl;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Assignee
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><projectCustomField
+        name="Assignee" type="user[1]" emptyText="Unassigned" canBeEmpty="true"><param
+        name="bundle" value="My project: Assignees"/></projectCustomField>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['220']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=12atvjhgpxc13tzmhv95b5eug;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/customfield/userBundle/My%20project:%20Assignees
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><userBundle
+        name="My project: Assignees"><user login="root" ringId="01932a63-0d13-45ec-a877-d2355c558b35"
+        url="https://youtrack.myjetbrains.com/rest/admin/user/root"/></userBundle>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['224']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=1q19k52v8usrr1q8xg8gkjat2v;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Subsystem
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><projectCustomField
+        name="Subsystem" type="ownedField[1]" emptyText="No Subsystem" canBeEmpty="false"><param
+        name="bundle" value="My project: Subsystems"/><defaultValue>No subsystem</defaultValue></projectCustomField>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['272']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=1abh27i2164a610s8fgdy1gd6x;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/customfield/ownedFieldBundle/My%20project:%20Subsystems
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><ownedFieldBundle
+        name="My project: Subsystems"><ownedField owner="&lt;no user&gt;">No subsystem</ownedField></ownedFieldBundle>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['183']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=jvcy4ctrhvnc1vk9lt205x3fh;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Fix%20versions
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><projectCustomField
+        name="Fix versions" type="version[*]" emptyText="Unscheduled" canBeEmpty="true"><param
+        name="bundle" value="My project: Versions"/></projectCustomField>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['227']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=1oyynrv3hopj8129k6ym3x0l2r;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/customfield/versionBundle/My%20project:%20Versions
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><versions
+        name="My project: Versions"/>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['94']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=py2k1y4t3dq11k6zu510byo3v;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Affected%20versions
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><projectCustomField
+        name="Affected versions" type="version[*]" emptyText="Unknown" canBeEmpty="true"><param
+        name="bundle" value="My project: Versions"/></projectCustomField>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['228']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=7xo9f486ah0l1vamylzt70zxu;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/customfield/versionBundle/My%20project:%20Versions
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><versions
+        name="My project: Versions"/>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['94']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=tck6xdrwe4zwcy8zyamgmu5h;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/project/myproject/customfield/Fixed%20in%20build
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><projectCustomField
+        name="Fixed in build" type="build[1]" emptyText="Next Build" canBeEmpty="true"><param
+        name="bundle" value="My project: Builds"/></projectCustomField>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['224']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=6xcofyhf13lpfc2vm0ff4x4q;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/customfield/buildBundle/My%20project:%20Builds
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><buildBundle
+        name="My project: Builds"/>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['95']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=1w3vvclob5z0y1w7tf683jjk7x;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+version: 1

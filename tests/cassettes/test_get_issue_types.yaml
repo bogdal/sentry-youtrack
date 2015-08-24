@@ -1,0 +1,24 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Cookie: [jetbrains.charisma.main.security.PRINCIPAL=abcd1234]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: GET
+    uri: https://youtrack.myjetbrains.com/rest/admin/customfield/bundle/Types
+  response:
+    body: {string: !!python/unicode '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><enumeration
+        name="Types"><value>Bug</value><value>Cosmetics</value><value>Exception</value><value>Feature</value><value>Task</value><value>Usability
+        Problem</value><value>Performance Problem</value><value>Epic</value><value>Meta
+        Issue</value><value>Auto-reported exception</value></enumeration>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-length: ['350']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=44sxhv1shphuurnweii2mlhg;Path=/]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+version: 1

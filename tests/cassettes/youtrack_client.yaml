@@ -1,0 +1,21 @@
+interactions:
+- request:
+    body: login=root&password=admin
+    headers:
+      Content-Type: [application/x-www-form-urlencoded]
+      User-Agent: [sentry-youtrack/0.2.4]
+    method: POST
+    uri: https://youtrack.myjetbrains.com/rest/user/login
+  response:
+    body: {string: !!python/unicode '<login>ok</login>'}
+    headers:
+      access-control-expose-headers: [Location]
+      cache-control: ['no-cache, no-store, no-transform, must-revalidate']
+      content-type: [application/xml; charset=UTF-8]
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: [Jetty(8.y.z-SNAPSHOT)]
+      set-cookie: [YTSESSIONID=p66uquc6xxzh1err5odptbsr8;Path=/, 'jetbrains.charisma.main.security.PRINCIPAL=abcd1234;Path=/;Expires=Tue,
+          23-Aug-2016 18:36:59 GMT']
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+version: 1
