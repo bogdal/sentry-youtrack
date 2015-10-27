@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# ~*~ coding: utf-8 ~*~
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 from sentry_youtrack import VERSION
@@ -10,6 +10,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'test_settings')
 
 class PyTest(TestCommand):
     user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+    test_args = []
 
     def initialize_options(self):
         TestCommand.initialize_options(self)
@@ -30,7 +31,7 @@ class PyTest(TestCommand):
 setup(
     name='sentry-youtrack',
     version=VERSION,
-    author='Adam Bogdal',
+    author='Adam Bogdał',
     author_email='adam@bogdal.pl',
     url='http://github.com/bogdal/sentry-youtrack',
     description='A Sentry extension which integrates with YouTrack',
@@ -63,7 +64,7 @@ setup(
         'test': PyTest
     },
     tests_require=[
-        'pytest',
+        'pytest>=2.8.2',
         'vcrpy>=1.7.3',
     ]
 )
