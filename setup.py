@@ -64,7 +64,7 @@ setup(
         'test': PyTest
     },
     tests_require=[
-        'pytest>=2.8.2',
+        'pytest',
         'vcrpy>=1.7.3',
     ]
 )
