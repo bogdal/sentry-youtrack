@@ -4,8 +4,7 @@
 
 {% block title %}{{ title }} | {{ block.super }}{% endblock %}
 
-{% block inner %}
-<div class="span12">
+{% block main %}
     <div class="page-header">
         <h3>{{ title }}</h3>
     </div>
@@ -20,8 +19,7 @@
     </div>
     {% endif %}
 
-
-    <form id='create-issue' class="form-horizontal" action="" method="post">
+    <form id='create-issue' class="form-stacked" action="" method="post">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next }}" />
         <div class="form-fields">
@@ -33,7 +31,6 @@
             </p>
         </div>
     </form>
-</div>
 {% endblock %}
 
 {% block meta %}
