@@ -173,7 +173,7 @@ class YouTrackClient(object):
     def add_tags(self, issue, tags):
         for tag in tags:
             cmd = u'add tag %s' % tag
-            yield self.execute_command(issue, cmd)
+            self.execute_command(issue, cmd)
 
     def get_project_fields_list(self, project_id):
         url = self.url + self.PROJECT_FIELDS.replace('<project_id>', project_id)
