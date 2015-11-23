@@ -114,9 +114,10 @@ class YouTrackPlugin(IssuePlugin):
         action_list = (super(YouTrackPlugin, self)
                        .actions(request, group, action_list, **kwargs))
         prefix = self.get_conf_key()
-        if not GroupMeta.objects.get_value(group, '%s:tid' % prefix, None):
-            url = self.get_url(group) + "?action=assign_issue"
-            action_list.append((self.get_existing_issue_title(), url))
+        if self.is_configured(request, group.project):
+            if not GroupMeta.objects.get_value(group, '%s:tid' % prefix, None):
+                url = self.get_url(group) + "?action=assign_issue"
+                action_list.append((self.get_existing_issue_title(), url))
         return action_list
 
     def view(self, request, group, **kwargs):
