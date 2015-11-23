@@ -1,0 +1,25 @@
+postgres:
+  image: postgres
+redis:
+  image: redis
+sentry-celery-beat:
+  build: .
+  links:
+    - postgres
+    - redis
+  command: sentry celery beat
+sentry-celery-worker:
+  build: .
+  links:
+    - postgres
+    - redis
+  command: sentry celery worker
+sentry:
+  build: .
+  links:
+    - postgres
+    - redis
+  ports:
+    - "9000:9000"
+  volumes:
+    - .:/plugin
