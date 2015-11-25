@@ -30,11 +30,5 @@ Screenshots
 
 Docker Compose
 --------------
-Preparation of test environment::
 
-    $ docker-compose build
-    $ docker-compose run sentry sentry syncdb
-    $ docker-compose run sentry sentry migrate
-    $ docker-compose up -d
-
-By default, ``sentry`` is configured to listen on port 9000.
+See details `here <https://github.com/bogdal/sentry-youtrack/tree/master/docker/>`_.

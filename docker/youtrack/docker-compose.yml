@@ -1,0 +1,10 @@
+youtrack:
+  image: uniplug/youtrack
+  ports:
+   - "80:80"
+sslproxy:
+  image: yajo/https-proxy
+  links:
+   - youtrack:www
+  ports:
+   - "443:443"

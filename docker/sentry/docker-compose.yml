@@ -22,4 +22,4 @@ sentry:
   ports:
     - "9000:9000"
   volumes:
-    - .:/plugin
+    - ../..:/plugin
