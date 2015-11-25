@@ -18,3 +18,11 @@ Preparation of test environment:
     $ docker-compose up -d
 
 ``youtrack`` is configured to listen on ports ``80`` and ``443``.
+
+Plugin configuration
+--------------------
+
+``YouTrack`` instance urls that link the above containers:
+
+  - http://my.youtrack
+  - https://ssl.youtrack

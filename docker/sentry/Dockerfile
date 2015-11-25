@@ -1,10 +1,9 @@
 FROM sentry
 
 USER root
-
-RUN pip install -U sentry
-
-RUN git clone https://github.com/bogdal/sentry-youtrack /plugin
-RUN cd /plugin && python setup.py develop
+RUN pip install sentry==7.7.4
+ADD entrypoint.sh /entrypoint.sh
 
 USER user
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["sentry", "start"]

@@ -19,6 +19,9 @@ sentry:
   links:
     - postgres
     - redis
+  external_links:
+    - youtrack_youtrack_1:my.youtrack
+    - youtrack_sslproxy_1:ssl.youtrack
   ports:
     - "9000:9000"
   volumes:
