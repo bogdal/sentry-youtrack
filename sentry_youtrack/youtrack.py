@@ -1,3 +1,4 @@
+import re
 import requests
 from BeautifulSoup import BeautifulStoneSoup
 
@@ -73,7 +74,8 @@ class YouTrackClient(object):
         return self._get_bundle(response, bundle)
 
     def _get_custom_project_field_details(self, field):
-        response = self.request(field['url'], method='get')
+        url = re.sub(r'http.?://([\w.\-_]+)', self.url, field['url'])
+        response = self.request(url, method='get')
         field_data = BeautifulStoneSoup(response.text)
         field_type = field_data.projectcustomfield['type']
         type_prefix = field_type[:field_type.find('[')]
