@@ -1,11 +1,16 @@
 from hashlib import md5
 
 from django import forms
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
-from requests import HTTPError, ConnectionError
+from requests.exceptions import ConnectionError, HTTPError, SSLError
 
 from .youtrack import YouTrackClient
+
+
+VERIFY_SSL_CERTIFICATE = getattr(
+    settings, 'YOUTRACK_VERIFY_SSL_CERTIFICATE', True)
 
 
 class YouTrackProjectForm(forms.Form):
@@ -125,8 +130,9 @@ class YouTrackConfigurationForm(forms.Form):
 
     error_message = {
         'client': _("Unable to connect to YouTrack."),
-        'invalid_ssl': _("SSL certificate  verification failed"),
-        'missing_fields': _('Missing required fields'),
+        'invalid_ssl': _("SSL certificate  verification failed."),
+        'invalid_password': _('Invalid username or password.'),
+        'missing_fields': _('Missing required fields.'),
         'perms': _("User doesn't have Low-level Administration permissions."),
         'required': _("This field is required.")}
 
@@ -163,8 +169,7 @@ class YouTrackConfigurationForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(YouTrackConfigurationForm, self).__init__(*args, **kwargs)
 
-        self.youtrack_client_error = ''
-        self.warning_message = ''
+        self.client_errors = {}
         client = None
         initial = kwargs.get("initial")
 
@@ -172,7 +177,8 @@ class YouTrackConfigurationForm(forms.Form):
             client = self.get_youtrack_client(initial)
             if not client and not args[0]:
                 self.full_clean()
-                self._errors['username'] = [self.youtrack_client_error]
+                for field, error in self.client_errors.items():
+                    self._errors[field] = [error]
 
         default_fields = ['url', 'username', 'password']
         if initial and client:
@@ -203,7 +209,8 @@ class YouTrackConfigurationForm(forms.Form):
         yt_settings = {
             'url': data.get('url'),
             'username': data.get('username'),
-            'password': data.get('password')}
+            'password': data.get('password'),
+            'verify_ssl_certificate': VERIFY_SSL_CERTIFICATE}
         if additional_params:
             yt_settings.update(additional_params)
 
@@ -211,19 +218,19 @@ class YouTrackConfigurationForm(forms.Form):
         try:
             client = YouTrackClient(**yt_settings)
         except (HTTPError, ConnectionError) as e:
-            if 'certificate verify failed' in unicode(e):
-                client = self.get_youtrack_client(
-                    data, additional_params={'verify_ssl_certificate': False})
-                self.warning_message = self.error_message['invalid_ssl']
+            if e.response is not None and e.response.status_code == 403:
+                self.client_errors['username'] = self.error_message[
+                    'invalid_password']
             else:
-                self.youtrack_client_error = u"%s %s" % (
-                    self.error_message['client'], e)
+                self.client_errors['url'] = self.error_message['client']
+        except (SSLError, TypeError) as e:
+            self.client_errors['url'] = self.error_message['invalid_ssl']
         if client:
             try:
                 client.get_user(yt_settings.get('username'))
             except HTTPError as e:
                 if e.response.status_code == 403:
-                    self.youtrack_client_error = self.error_message['perms']
+                    self.client_errors['username'] = self.error_message['perms']
                     client = None
         return client
 
@@ -247,7 +254,7 @@ class YouTrackConfigurationForm(forms.Form):
             raise ValidationError(self.error_message['missing_fields'])
         client = self.get_youtrack_client(data)
         if not client:
-            self._errors['username'] = self.error_class([
-                self.youtrack_client_error])
-            del data['username']
+            for field, error in self.client_errors.items():
+                self._errors[field] = [error]
+                del data[field]
         return data

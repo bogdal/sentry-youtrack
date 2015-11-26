@@ -22,6 +22,11 @@ Go to your project's configuration page (Projects -> [Project]) and select the Y
 Enter the required credentials and save changes. Filling out the form is a two-step process
 (one to fill in credentials, one to configure project).
 
+If you want to use ``YouTrack`` instance without valid ssl certificate add the following line to the ``sentry`` config file::
+
+    YOUTRACK_VERIFY_SSL_CERTIFICATE = False
+
+
 Screenshots
 -----------
 

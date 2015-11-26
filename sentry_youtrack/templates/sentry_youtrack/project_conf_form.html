@@ -11,27 +11,15 @@
 
 <script type="text/javascript">
     $(document).ready(function(){
-
         var msg = "{{ form.second_step_msg }}";
-        var warning = "{{ form.warning_message }}";
 
         if(msg) {
             var msg_box = $("<div>")
-                    .addClass("alert")
-                    .addClass("alert-block")
-                    .addClass("alert-info")
-                    .append($("<p>").html(msg));
+                .addClass("alert")
+                .addClass("alert-block")
+                .addClass("alert-info")
+                .append($("<p>").html(msg));
             $("#messages").append(msg_box);
         }
-
-        if(warning) {
-            var waring_box = $("<div>")
-                    .addClass("alert")
-                    .addClass("alert-block")
-                    .addClass("alert-warning")
-                    .append($("<p>").html(warning));
-            $("#messages").append(waring_box);
-        }
-
     });
 </script>

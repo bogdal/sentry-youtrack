@@ -10,7 +10,8 @@ from sentry.plugins.bases.issue import IssuePlugin
 
 from . import VERSION
 from .forms import (NewIssueForm, AssignIssueForm, DefaultFieldForm,
-                    YouTrackConfigurationForm, YouTrackProjectForm,)
+                    YouTrackConfigurationForm, YouTrackProjectForm,
+                    VERIFY_SSL_CERTIFICATE)
 from .utils import cache_this, get_int
 from .youtrack import YouTrackClient
 
@@ -43,7 +44,8 @@ class YouTrackPlugin(IssuePlugin):
         settings = {
             'url': self.get_option('url', project),
             'username': self.get_option('username', project),
-            'password': self.get_option('password', project)}
+            'password': self.get_option('password', project),
+            'verify_ssl_certificate': VERIFY_SSL_CERTIFICATE}
         return YouTrackClient(**settings)
 
     def get_project_fields(self, project):
