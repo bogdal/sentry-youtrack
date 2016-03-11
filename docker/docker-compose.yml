@@ -3,26 +3,37 @@ postgres:
 redis:
   image: redis
 sentry-celery-beat:
-  build: .
+  build: ./sentry
   links:
     - postgres
     - redis
   command: sentry celery beat
 sentry-celery-worker:
-  build: .
+  build: ./sentry
   links:
     - postgres
     - redis
   command: sentry celery worker
 sentry:
-  build: .
+  build: ./sentry
   links:
     - postgres
     - redis
-  external_links:
-    - youtrack_youtrack_1:my.youtrack
-    - youtrack_sslproxy_1:ssl.youtrack
+    - youtrack:my.youtrack
+    - youtrack_ssl:ssl.youtrack
   ports:
     - "9000:9000"
+  privileged: true
   volumes:
-    - ../..:/plugin
+    - ..:/plugin
+
+youtrack:
+  image: uniplug/youtrack
+  ports:
+   - "80:80"
+youtrack_ssl:
+  image: yajo/https-proxy
+  links:
+   - youtrack:www
+  ports:
+   - "443:443"

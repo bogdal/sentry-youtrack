@@ -1,7 +1,7 @@
-FROM sentry
+FROM sentry:7.7
 
 USER root
-RUN pip install sentry==7.7.4
+RUN pip install kombu==3.0.30
 ADD entrypoint.sh /entrypoint.sh
 
 USER user
