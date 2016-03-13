@@ -1,7 +1,7 @@
 sentry-youtrack
 ===============
 
-.. image:: https://travis-ci.org/bogdal/sentry-youtrack.png?branch=develop   
+.. image:: https://travis-ci.org/bogdal/sentry-youtrack.png?branch=master   
     :target: https://travis-ci.org/bogdal/sentry-youtrack
 
 .. image:: https://version-image.appspot.com/pypi/?name=sentry-youtrack
