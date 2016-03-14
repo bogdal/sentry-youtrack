@@ -3,19 +3,25 @@ postgres:
 redis:
   image: redis
 sentry-celery-beat:
-  build: ./sentry
+  build: ./sentry8.x
+  environment:
+    - SENTRY_SECRET_KEY=secret
   links:
     - postgres
     - redis
   command: sentry celery beat
 sentry-celery-worker:
-  build: ./sentry
+  build: ./sentry8.x
+  environment:
+    - SENTRY_SECRET_KEY=secret
   links:
     - postgres
     - redis
   command: sentry celery worker
 sentry:
-  build: ./sentry
+  build: ./sentry8.x
+  environment:
+    - SENTRY_SECRET_KEY=secret
   links:
     - postgres
     - redis
