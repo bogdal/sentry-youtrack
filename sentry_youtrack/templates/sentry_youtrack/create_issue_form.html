@@ -24,7 +24,7 @@
         <input type="hidden" name="next" value="{{ next }}" />
         <div class="form-fields">
             {{ form|crispy }}
-            <p class="actions">
+            <p class="form-actions">
                 {% block submit_button %}
                     <button type="submit" class="btn btn-primary">{% trans "Create issue" %}</button>
                 {% endblock %}
