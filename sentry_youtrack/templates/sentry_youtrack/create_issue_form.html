@@ -28,6 +28,7 @@
                 {% block submit_button %}
                     <button type="submit" class="btn btn-primary">{% trans "Create issue" %}</button>
                 {% endblock %}
+                <a href="{{ group.get_absolute_url }}" class="btn btn-default">{% trans "Cancel" %}</a>
             </p>
         </div>
     </form>
