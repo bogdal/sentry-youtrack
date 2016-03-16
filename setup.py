@@ -39,7 +39,7 @@ setup(
     license='BSD',
     packages=find_packages(),
     install_requires=[
-       'sentry>=6.1.0',
+       'sentry>=8.0.0',
     ],
     include_package_data=True,
     zip_safe=False,
