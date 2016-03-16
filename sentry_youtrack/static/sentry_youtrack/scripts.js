@@ -12,7 +12,7 @@ function save_as_default(el, field, value) {
             el.fadeOut(200);
         }
     }).done(function(data){
-        el.find('i').removeClass('icon-share').addClass('icon-ok');
+        el.find('i').removeClass('icon-lock').addClass('icon-checkmark');
         el.fadeIn(200);
     });
 }
@@ -23,9 +23,9 @@ function init_action_buttons(container) {
                 .attr('type', 'button')
                 .attr('title', SAVE_AS_DEFAULT_BUTTON_MSG)
                 .attr('data-placement', 'right')
-                .addClass('btn-link')
+                .addClass('btn-link btn-sm')
                 .addClass('save-as-default')
-                .html($('<i>').addClass('icon-share'));
+                .html($('<i>').addClass('icon-lock'));
         $(this).after(action_button);
     });
     $('button[title]').tooltip();
