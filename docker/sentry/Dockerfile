@@ -1,9 +1,5 @@
-FROM sentry:7.7
+FROM sentry:8.2
 
-USER root
-RUN pip install kombu==3.0.30
-ADD entrypoint.sh /entrypoint.sh
-
-USER user
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["sentry", "start"]
+COPY docker-entrypoint.sh /
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["start"]
