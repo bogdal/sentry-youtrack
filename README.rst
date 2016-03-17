@@ -1,7 +1,7 @@
 sentry-youtrack
 ===============
 
-.. image:: https://travis-ci.org/bogdal/sentry-youtrack.png?branch=master   
+.. image:: https://travis-ci.org/bogdal/sentry-youtrack.png?branch=master
     :target: https://travis-ci.org/bogdal/sentry-youtrack
 
 .. image:: https://version-image.appspot.com/pypi/?name=sentry-youtrack
@@ -16,9 +16,12 @@ Install the package via ``pip``::
 
     pip install sentry-youtrack
 
+``sentry-youtrack >= 0.3.0`` supports **Sentry 8.x**.
+``sentry-youtrack < 0.3.0`` supports **Sentry 7.x**.
+
 Configuration
 -------------
-Go to your project's configuration page (Projects -> [Project]) and select the YouTrack tab. 
+Go to your project's configuration page (Projects -> [Project]) and select the YouTrack tab.
 Enter the required credentials and save changes. Filling out the form is a two-step process
 (one to fill in credentials, one to configure project).
 

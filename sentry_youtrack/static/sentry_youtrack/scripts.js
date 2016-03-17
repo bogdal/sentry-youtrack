@@ -9,10 +9,26 @@ function save_as_default(el, field, value) {
             value: value
         },
         beforeSend: function( xhr ) {
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrf'));
             el.fadeOut(200);
         }
     }).done(function(data){
-        el.find('i').removeClass('icon-share').addClass('icon-ok');
+        el.find('i').removeClass('icon-lock').addClass('icon-checkmark');
         el.fadeIn(200);
     });
 }
@@ -23,9 +39,9 @@ function init_action_buttons(container) {
                 .attr('type', 'button')
                 .attr('title', SAVE_AS_DEFAULT_BUTTON_MSG)
                 .attr('data-placement', 'right')
-                .addClass('btn-link')
+                .addClass('btn-link btn-sm')
                 .addClass('save-as-default')
-                .html($('<i>').addClass('icon-share'));
+                .html($('<i>').addClass('icon-lock'));
         $(this).after(action_button);
     });
     $('button[title]').tooltip();

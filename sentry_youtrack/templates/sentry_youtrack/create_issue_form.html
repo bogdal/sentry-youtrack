@@ -4,8 +4,7 @@
 
 {% block title %}{{ title }} | {{ block.super }}{% endblock %}
 
-{% block inner %}
-<div class="span12">
+{% block main %}
     <div class="page-header">
         <h3>{{ title }}</h3>
     </div>
@@ -20,20 +19,19 @@
     </div>
     {% endif %}
 
-
-    <form id='create-issue' class="form-horizontal" action="" method="post">
+    <form id='create-issue' class="form-stacked" action="" method="post">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next }}" />
         <div class="form-fields">
             {{ form|crispy }}
-            <p class="actions">
+            <p class="form-actions">
                 {% block submit_button %}
                     <button type="submit" class="btn btn-primary">{% trans "Create issue" %}</button>
                 {% endblock %}
+                <a href="{{ group.get_absolute_url }}" class="btn btn-default">{% trans "Cancel" %}</a>
             </p>
         </div>
     </form>
-</div>
 {% endblock %}
 
 {% block meta %}
