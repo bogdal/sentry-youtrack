@@ -1,5 +1,7 @@
 Docker Compose
 --------------
+You will need to install Docker and `docker-compose <https://docs.docker.com/compose/install/>`_ before performing the following steps.
+
 Preparation of test environment::
 
     $ docker-compose build
