@@ -29,7 +29,6 @@ sentry:
     - youtrack_ssl:ssl.youtrack
   ports:
     - "9000:9000"
-  privileged: true
   volumes:
     - ..:/plugin
 
