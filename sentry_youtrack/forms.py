@@ -140,7 +140,7 @@ class YouTrackConfigurationForm(forms.Form):
         label=_("YouTrack Instance URL"),
         widget=forms.TextInput(
             attrs={'class': 'span9',
-                   'placeholder': 'e.g. "https://youtrack.myjetbrains.com/"'}),
+                   'placeholder': 'e.g. "https://yoursitename.myjetbrains.com/youtrack/"'}),
         required=True)
     username = forms.CharField(
         label=_("Username"),
