@@ -104,8 +104,8 @@ class YouTrackPlugin(IssuePlugin):
         return issue_id
 
     def get_issue_url(self, group, issue_id, **kwargs):
-        url = self.get_option('url', group.project)
-        return "%sissue/%s" % (url, issue_id)
+        url = self.get_option('url', group.project).rstrip('/')
+        return "%s/issue/%s" % (url, issue_id)
 
     def get_view_response(self, request, group):
         if request.is_ajax() and request.GET.get('action'):
