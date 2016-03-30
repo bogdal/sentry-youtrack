@@ -1,7 +1,18 @@
 import requests
+import logging
 from BeautifulSoup import BeautifulStoneSoup
 
 from sentry_youtrack import VERSION
+
+
+logger = logging.getLogger(__name__)
+
+
+class Session(requests.Session):
+
+    def request(self, method, url, **kwargs):
+        logger.debug('%s: %s' % (method, url))
+        return super(Session, self).request(method, url, **kwargs)
 
 
 class YouTrackError(Exception):
@@ -122,10 +133,11 @@ class YouTrackClient(object):
         if hasattr(self, 'cookies'):
             kwargs['cookies'] = self.cookies
 
+        session = Session()
         if method == 'get':
-            response = requests.get(**kwargs)
+            response = session.get(**kwargs)
         else:
-            response = requests.post(**kwargs)
+            response = session.post(**kwargs)
         response.raise_for_status()
         return response
 
