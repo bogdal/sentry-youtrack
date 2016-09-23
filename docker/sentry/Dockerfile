@@ -1,5 +1,5 @@
-FROM sentry:8.2
+FROM sentry:8.8
 
-COPY entrypoint.sh /
-ENTRYPOINT ["/entrypoint.sh"]
+COPY entrypoint.sh /entrypoint-plugin.sh
+ENTRYPOINT ["/entrypoint-plugin.sh"]
 CMD ["start"]

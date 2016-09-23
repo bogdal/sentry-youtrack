@@ -11,7 +11,7 @@ if [ -f "$custom_settings" ]; then
 	fi
 fi
 if [ -d '/plugin' ]; then
-    cd /plugin && python setup.py develop --user
+    cd /plugin && python setup.py develop
 fi
 
-/docker-entrypoint.sh $@
+/entrypoint.sh $@
