@@ -1,6 +1,6 @@
 import requests
 import logging
-from BeautifulSoup import BeautifulStoneSoup
+from bs4 import BeautifulSoup
 
 from sentry_youtrack import VERSION
 
@@ -52,11 +52,11 @@ class YouTrackClient(object):
         return response.cookies.get(self.API_KEY_COOKIE_NAME)
 
     def _get_bundle(self, response, bundle='enumeration'):
-        soup = BeautifulStoneSoup(response.text)
+        soup = BeautifulSoup(response.text, 'xml')
         if soup.find('error'):
             raise YouTrackError(soup.find('error').string)
 
-        bundle_method = '_get_%s_values' % bundle
+        bundle_method = '_get_%s_values' % bundle.lower()
         if hasattr(self, bundle_method):
             return getattr(self, bundle_method)(soup)
 
@@ -65,8 +65,8 @@ class YouTrackClient(object):
     def _get_userbundle_values(self, soup):
         def get_user_logins(xml):
             return [item['login'] for item in xml.findAll('user')]
-        users = set(get_user_logins(soup.userbundle))
-        for group in soup.userbundle.findAll('usergroup'):
+        users = set(get_user_logins(soup.userBundle))
+        for group in soup.userBundle.findAll('userGroup'):
             users.update(
                 get_user_logins(self._get_users_from_group(group['name'])))
         return sorted(users)
@@ -74,7 +74,7 @@ class YouTrackClient(object):
     def _get_users_from_group(self, group):
         url = self.url + self.USER_URL.replace('/<user>', '')
         response = self.request(url, method='get', params={'group': group})
-        return BeautifulStoneSoup(response.text).userrefs
+        return BeautifulSoup(response.text, 'xml').userRefs
 
     def _get_custom_field_values(self, name, value, bundle='enumeration'):
         url = self.url + (self.CUSTOM_FIELD_VALUES
@@ -87,8 +87,8 @@ class YouTrackClient(object):
         url = field['url']
         url = '%s%s' % (self.url, url[url.index('/rest/admin/'):])
         response = self.request(url, method='get')
-        field_data = BeautifulStoneSoup(response.text)
-        field_type = field_data.projectcustomfield['type']
+        field_data = BeautifulSoup(response.text, 'xml')
+        field_type = field_data.projectCustomField['type']
         type_prefix = field_type[:field_type.find('[')]
 
         type_name = "%sBundle" % type_prefix
@@ -97,11 +97,11 @@ class YouTrackClient(object):
 
         bundles = {
             'enum': 'enumeration',
-            'state': 'statebundle',
-            'user': 'userbundle',
-            'ownedField': 'ownedfieldbundle',
+            'state': 'stateBundle',
+            'user': 'userBundle',
+            'ownedField': 'ownedFieldBundle',
             'version': 'versions',
-            'build': 'buildbundle'}
+            'build': 'buildBundle'}
 
         values = None
         if field_data.param:
@@ -112,9 +112,9 @@ class YouTrackClient(object):
             values = self._get_custom_field_values(**kwargs)
 
         field_details = {
-            'name': field_data.projectcustomfield['name'],
-            'type': field_data.projectcustomfield['type'],
-            'empty_text': field_data.projectcustomfield['emptytext'],
+            'name': field_data.projectCustomField['name'],
+            'type': field_data.projectCustomField['type'],
+            'empty_text': field_data.projectCustomField['emptyText'],
             'values': values}
         return field_details
 
@@ -144,18 +144,18 @@ class YouTrackClient(object):
     def get_project_name(self, project_id):
         url = self.url + self.PROJECT_URL.replace('<project_id>', project_id)
         response = self.request(url, method='get')
-        return BeautifulStoneSoup(response.text).project['name']
+        return BeautifulSoup(response.text, 'xml').project['name']
 
     def get_user(self, username):
         url = self.url + self.USER_URL.replace('<user>', username)
         response = self.request(url, method='get')
-        return BeautifulStoneSoup(response.text).user
+        return BeautifulSoup(response.text, 'xml').user
 
     def get_projects(self):
         url = self.url + self.PROJECTS_URL
         response = self.request(url, method='get')
-        for project in BeautifulStoneSoup(response.text).projects:
-            yield {'id': project['shortname'], 'name': project['name']}
+        for project in BeautifulSoup(response.text, 'xml').projects:
+            yield {'id': project['shortName'], 'name': project['name']}
 
     def get_priorities(self):
         return self._get_custom_field_values('bundle', 'Priorities')
@@ -171,13 +171,13 @@ class YouTrackClient(object):
             {'id': issue['id'],
              'state': issue.find("field", {'name': 'State'}).value.text,
              'summary': issue.find("field", {'name': 'summary'}).text}
-            for issue in BeautifulStoneSoup(response.text).issues]
+            for issue in BeautifulSoup(response.text, 'xml').issues]
         return issues
 
     def create_issue(self, data):
         url = self.url + self.CREATE_URL
         response = self.request(url, data=data, method='post')
-        return BeautifulStoneSoup(response.text).issue['id']
+        return BeautifulSoup(response.text, 'xml').issue['id']
 
     def execute_command(self, issue, command):
         url = self.url + self.COMMAND_URL.replace('<issue>', issue)
@@ -192,7 +192,7 @@ class YouTrackClient(object):
     def get_project_fields_list(self, project_id):
         url = self.url + self.PROJECT_FIELDS.replace('<project_id>', project_id)
         response = self.request(url, method='get')
-        for field in BeautifulStoneSoup(response.text).projectcustomfieldrefs:
+        for field in BeautifulSoup(response.text, 'xml').projectCustomFieldRefs:
             yield {'name': field['name'], 'url': field['url']}
 
     def get_project_fields(self, project_id, ignore_fields=None):

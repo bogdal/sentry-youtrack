@@ -39,7 +39,8 @@ setup(
     license='BSD',
     packages=find_packages(),
     install_requires=[
-       'sentry>=8.0.0',
+        'beautifulsoup4>=4.5.1',
+        'sentry>=8.0.0',
     ],
     include_package_data=True,
     zip_safe=False,
