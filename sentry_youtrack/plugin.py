@@ -52,8 +52,8 @@ class YouTrackPlugin(IssuePlugin):
         @cache_this(600)
         def cached_fields(ignore_fields):
             yt_client = self.get_youtrack_client(project)
-            return yt_client.get_project_fields(
-                self.get_option('project', project), ignore_fields)
+            return list(yt_client.get_project_fields(
+                self.get_option('project', project), ignore_fields))
         return cached_fields(self.get_option('ignore_fields', project))
 
     def get_initial_form_data(self, request, group, event, **kwargs):
