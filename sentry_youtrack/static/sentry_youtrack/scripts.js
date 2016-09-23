@@ -24,7 +24,8 @@ function save_as_default(el, field, value) {
                 }
                 return cookieValue;
             }
-            xhr.setRequestHeader("X-CSRFToken", getCookie('csrf'));
+            var csrfCookieName = window.csrfCookieName || 'csrf';
+            xhr.setRequestHeader("X-CSRFToken", getCookie(csrfCookieName));
             el.fadeOut(200);
         }
     }).done(function(data){
