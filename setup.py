@@ -41,6 +41,7 @@ setup(
     install_requires=[
         'beautifulsoup4>=4.5.1',
         'sentry>=8.0.0',
+        'unidecode>=0.4.19'
     ],
     include_package_data=True,
     zip_safe=False,
