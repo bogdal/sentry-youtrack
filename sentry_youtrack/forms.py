@@ -132,6 +132,7 @@ class YouTrackConfigurationForm(forms.Form):
         'client': _("Unable to connect to YouTrack."),
         'invalid_ssl': _("SSL certificate  verification failed."),
         'invalid_password': _('Invalid username or password.'),
+        'invalid_project': _('Invalid project: \'%s\''),
         'missing_fields': _('Missing required fields.'),
         'perms': _("User doesn't have Low-level Administration permissions."),
         'required': _("This field is required.")}
@@ -168,42 +169,63 @@ class YouTrackConfigurationForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(YouTrackConfigurationForm, self).__init__(*args, **kwargs)
-
         self.client_errors = {}
-        client = None
-        initial = kwargs.get("initial")
 
+        initial = kwargs.get("initial")
         if initial:
             client = self.get_youtrack_client(initial)
-            if not client and not args[0]:
+            if not client:
+                self.remove_fields()
+            else:
+                if initial.get('project'):
+                    choices = self.get_ignore_field_choices(
+                        client, initial.get('project'))
+                    self.fields['ignore_fields'].choices = choices
+
+                choices = self.get_project_field_choices(
+                    client, initial.get('project'))
+                self.fields["project"].choices = choices
+
+                if not any(args) and not initial.get('project'):
+                    self.second_step_msg = _(
+                        "Your credentials are valid but plugin is NOT active "
+                        "yet. Please fill in remaining required fields.")
+
+            if self.client_errors and not args[0]:
                 self.full_clean()
                 for field, error in self.client_errors.items():
                     self._errors[field] = [error]
-
-        default_fields = ['url', 'username', 'password']
-        if initial and client:
-            default_fields.append('project')
-
-        if initial and client:
-            if initial.get('project'):
-                fields = client.get_project_fields_list(initial.get('project'))
-                names = [field['name'] for field in fields]
-                self.fields['ignore_fields'].choices = zip(names, names)
-
-            projects = [(' ', u"- Choose project -")]
-            for project in client.get_projects():
-                display = "%s (%s)" % (project['name'], project['id'])
-                projects.append((project['id'], display))
-            self.fields["project"].choices = projects
-
-            if not any(args) and not initial.get('project'):
-                self.second_step_msg = _("Your credentials are valid but "
-                                         "plugin is NOT active yet. Please "
-                                         "fill in remaining required fields.")
         else:
-            del self.fields["project"]
-            del self.fields["default_tags"]
-            del self.fields["ignore_fields"]
+            self.remove_fields()
+
+    def remove_fields(self):
+        del self.fields["project"]
+        del self.fields["default_tags"]
+        del self.fields["ignore_fields"]
+
+    def get_ignore_field_choices(self, client, project):
+        try:
+            fields = list(client.get_project_fields_list(project))
+        except HTTPError:
+            self.client_errors['project'] = self.error_message[
+                'invalid_project'] % (project,)
+        else:
+            names = [field['name'] for field in fields]
+            return zip(names, names)
+        return []
+
+    def get_project_field_choices(self, client, project):
+        choices = [(' ', u"- Choose project -")]
+        try:
+            projects = list(client.get_projects())
+        except HTTPError:
+            self.client_errors['project'] = self.error_message[
+                'invalid_project'] % (project, )
+        else:
+            for project in projects:
+                display = "%s (%s)" % (project['name'], project['id'])
+                choices.append((project['id'], display))
+        return choices
 
     def get_youtrack_client(self, data, additional_params=None):
         yt_settings = {
@@ -256,5 +278,6 @@ class YouTrackConfigurationForm(forms.Form):
         if not client:
             for field, error in self.client_errors.items():
                 self._errors[field] = [error]
-                del data[field]
+                if field in data.keys():
+                    del data[field]
         return data
