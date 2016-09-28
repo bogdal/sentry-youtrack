@@ -174,7 +174,9 @@ class YouTrackConfigurationForm(forms.Form):
         initial = kwargs.get("initial")
         if initial:
             client = self.get_youtrack_client(initial)
-            if client:
+            if not client:
+                self.remove_fields()
+            else:
                 if initial.get('project'):
                     choices = self.get_ignore_field_choices(
                         client, initial.get('project'))
@@ -194,9 +196,12 @@ class YouTrackConfigurationForm(forms.Form):
                 for field, error in self.client_errors.items():
                     self._errors[field] = [error]
         else:
-            del self.fields["project"]
-            del self.fields["default_tags"]
-            del self.fields["ignore_fields"]
+            self.remove_fields()
+
+    def remove_fields(self):
+        del self.fields["project"]
+        del self.fields["default_tags"]
+        del self.fields["ignore_fields"]
 
     def get_ignore_field_choices(self, client, project):
         try:
