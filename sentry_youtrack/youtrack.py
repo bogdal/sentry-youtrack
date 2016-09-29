@@ -49,6 +49,8 @@ class YouTrackClient(object):
             'password': password}
         url = self.url + self.LOGIN_URL
         response = self.request(url, data=credentials, method='post')
+        if BeautifulSoup(response.text, 'xml').login is None:
+            raise requests.HTTPError('Invalid YouTrack url')
         return response.cookies.get(self.API_KEY_COOKIE_NAME)
 
     def _get_bundle(self, response, bundle='enumeration'):
